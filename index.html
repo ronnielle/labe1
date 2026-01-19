@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labe - Astrocartography</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: 200;
+            letter-spacing: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .logo:hover {
+            opacity: 0.7;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #999;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+        }
+        
+        input {
+            width: 100%;
+            padding: 1rem;
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #fff;
+        }
+        
+        input::placeholder {
+            color: #555;
+        }
+        
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #111;
+            border: 1px solid #333;
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .autocomplete-suggestions.active {
+            display: block;
+        }
+        
+        .suggestion-item {
+            padding: 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #222;
+            transition: background 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background: #1a1a1a;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-top: 2rem;
+        }
+        
+        .btn:hover {
+            background: #ddd;
+        }
+        
+        .categories {
+            display: grid;
+            gap: 1rem;
+            max-width: 500px;
+        }
+        
+        .category-card {
+            padding: 2rem;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .category-card:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .category-card h3 {
+            font-size: 1.25rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+        
+        .category-card p {
+            font-size: 0.875rem;
+            color: #999;
+        }
+        
+        .map-container {
+            border: 1px solid #333;
+            padding: 2rem;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #mapCanvas {
+            width: 100%;
+            height: 900px;
+            display: block;
+        }
+        
+        .back-btn {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #333;
+            margin-top: 1rem;
+        }
+        
+        .back-btn:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .map-info {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #333;
+        }
+        
+        .map-info h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: #999;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .legend-line {
+            width: 30px;
+            height: 2px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .city-list {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #222;
+        }
+        
+        .city-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .city-name {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        
+        .city-country {
+            font-size: 0.875rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+        
+        .city-lines {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Screen 1: Birth Details -->
+        <div class="screen active" id="screen1">
+            <div class="logo" onclick="goToHomepage()">LABE</div>
+            <h1>Your cosmic map awaits</h1>
+            <p class="subtitle">Discover where in the world your potential truly shines. We'll map your birth chart across the globe to reveal the places that amplify different aspects of your life.</p>
+            
+            <div class="input-group">
+                <label>Your Name</label>
+                <input type="text" id="userName" placeholder="What should we call you?" required>
+                <div class="error" id="nameError"></div>
+            </div>
+            
+            <div class="input-group">
+                <label>Birth Date</label>
+                <input type="date" id="birthDate" required>
+                <div class="error" id="dateError"></div>
+            </div>
+            <div class="input-group">
+                <label>Birth Time</label>
+                <input type="time" id="birthTime" required>
+                <div class="error" id="timeError"></div>
+            </div>
+            <div class="input-group">
+                <label>Birth Location</label>
+                <input type="text" id="birthLocation" placeholder="Start typing your birth city..." required autocomplete="off">
+                <div class="autocomplete-suggestions" id="suggestions"></div>
+                <div class="error" id="locationError"></div>
+            </div>
+            <button class="btn" onclick="validateAndContinue()">Continue</button>
+        </div>
+        
+        <!-- Screen 2: Category Selection -->
+        <div class="screen" id="screen2">
+            <div class="logo" onclick="goToHomepage()">LABE</div>
+            <h2 id="greetingText">Hi there,</h2>
+            <p class="subtitle">Choose what matters most to you right now. We'll show you the places around the world where this energy flows strongest for you.</p>
+            <div class="categories">
+                <div class="category-card" onclick="calculateMap('career')">
+                    <h3>Career Advancement</h3>
+                    <p>Where your ambition finds fertile ground</p>
+                </div>
+                <div class="category-card" onclick="calculateMap('studies')">
+                    <h3>Studies & Learning</h3>
+                    <p>Where knowledge opens doors</p>
+                </div>
+                <div class="category-card" onclick="calculateMap('love')">
+                    <h3>Love & Romance</h3>
+                    <p>Where hearts align</p>
+                </div>
+                <div class="category-card" onclick="calculateMap('family')">
+                    <h3>Family & Home</h3>
+                    <p>Where you belong</p>
+                </div>
+            </div>
+            <button class="btn back-btn" onclick="nextScreen(1)">Back</button>
+        </div>
+        
+        <!-- Screen 3: Map View -->
+        <div class="screen" id="screen3">
+            <div class="logo" onclick="goToHomepage()">LABE</div>
+            <h2 id="selectedCategory">Your Map</h2>
+            <p class="subtitle" id="mapSubtitle"></p>
+            <div class="map-container">
+                <canvas id="mapCanvas"></canvas>
+            </div>
+            <div class="map-info">
+                <h3>Your Planetary Lines</h3>
+                <div class="legend" id="legend"></div>
+                <div id="interpretations"></div>
+                <div class="city-list" id="cityList"></div>
+            </div>
+            <button class="btn back-btn" onclick="nextScreen(2)">Explore Another Path</button>
+        </div>
+    </div>
+    
+    <script>
+        const worldCities = [
+            // United States - Major & Minor
+            { name: 'New York', country: 'United States', lat: 40.7128, lon: -74.0060 },
+            { name: 'Los Angeles', country: 'United States', lat: 34.0522, lon: -118.2437 },
+            { name: 'Chicago', country: 'United States', lat: 41.8781, lon: -87.6298 },
+            { name: 'Houston', country: 'United States', lat: 29.7604, lon: -95.3698 },
+            { name: 'Phoenix', country: 'United States', lat: 33.4484, lon: -112.0740 },
+            { name: 'Philadelphia', country: 'United States', lat: 39.9526, lon: -75.1652 },
+            { name: 'San Antonio', country: 'United States', lat: 29.4241, lon: -98.4936 },
+            { name: 'San Diego', country: 'United States', lat: 32.7157, lon: -117.1611 },
+            { name: 'Dallas', country: 'United States', lat: 32.7767, lon: -96.7970 },
+            { name: 'San Jose', country: 'United States', lat: 37.3382, lon: -121.8863 },
+            { name: 'Austin', country: 'United States', lat: 30.2672, lon: -97.7431 },
+            { name: 'San Francisco', country: 'United States', lat: 37.7749, lon: -122.4194 },
+            { name: 'Seattle', country: 'United States', lat: 47.6062, lon: -122.3321 },
+            { name: 'Denver', country: 'United States', lat: 39.7392, lon: -104.9903 },
+            { name: 'Washington DC', country: 'United States', lat: 38.9072, lon: -77.0369 },
+            { name: 'Boston', country: 'United States', lat: 42.3601, lon: -71.0589 },
+            { name: 'Nashville', country: 'United States', lat: 36.1627, lon: -86.7816 },
+            { name: 'Portland', country: 'United States', lat: 45.5152, lon: -122.6784 },
+            { name: 'Las Vegas', country: 'United States', lat: 36.1699, lon: -115.1398 },
+            { name: 'Miami', country: 'United States', lat: 25.7617, lon: -80.1918 },
+            { name: 'Atlanta', country: 'United States', lat: 33.7490, lon: -84.3880 },
+            { name: 'Detroit', country: 'United States', lat: 42.3314, lon: -83.0458 },
+            { name: 'Minneapolis', country: 'United States', lat: 44.9778, lon: -93.2650 },
+            { name: 'Tampa', country: 'United States', lat: 27.9506, lon: -82.4572 },
+            { name: 'Orlando', country: 'United States', lat: 28.5383, lon: -81.3792 },
+            { name: 'Charlotte', country: 'United States', lat: 35.2271, lon: -80.8431 },
+            { name: 'Salt Lake City', country: 'United States', lat: 40.7608, lon: -111.8910 },
+            { name: 'Honolulu', country: 'United States', lat: 21.3099, lon: -157.8581 },
+            { name: 'Anchorage', country: 'United States', lat: 61.2181, lon: -149.9003 },
+            
+            // Canada
+            { name: 'Toronto', country: 'Canada', lat: 43.6532, lon: -79.3832 },
+            { name: 'Montreal', country: 'Canada', lat: 45.5017, lon: -73.5673 },
+            { name: 'Vancouver', country: 'Canada', lat: 49.2827, lon: -123.1207 },
+            { name: 'Calgary', country: 'Canada', lat: 51.0447, lon: -114.0719 },
+            { name: 'Edmonton', country: 'Canada', lat: 53.5461, lon: -113.4938 },
+            { name: 'Ottawa', country: 'Canada', lat: 45.4215, lon: -75.6972 },
+            { name: 'Quebec City', country: 'Canada', lat: 46.8139, lon: -71.2080 },
+            { name: 'Winnipeg', country: 'Canada', lat: 49.8951, lon: -97.1384 },
+            { name: 'Halifax', country: 'Canada', lat: 44.6488, lon: -63.5752 },
+            { name: 'Victoria', country: 'Canada', lat: 48.4284, lon: -123.3656 },
+            
+            // Mexico & Central America
+            { name: 'Mexico City', country: 'Mexico', lat: 19.4326, lon: -99.1332 },
+            { name: 'Guadalajara', country: 'Mexico', lat: 20.6597, lon: -103.3496 },
+            { name: 'Monterrey', country: 'Mexico', lat: 25.6866, lon: -100.3161 },
+            { name: 'Cancun', country: 'Mexico', lat: 21.1619, lon: -86.8515 },
+            { name: 'Tijuana', country: 'Mexico', lat: 32.5149, lon: -117.0382 },
+            { name: 'Playa del Carmen', country: 'Mexico', lat: 20.6296, lon: -87.0739 },
+            { name: 'Puerto Vallarta', country: 'Mexico', lat: 20.6534, lon: -105.2253 },
+            { name: 'Guatemala City', country: 'Guatemala', lat: 14.6349, lon: -90.5069 },
+            { name: 'San Jose', country: 'Costa Rica', lat: 9.9281, lon: -84.0907 },
+            { name: 'Panama City', country: 'Panama', lat: 8.9824, lon: -79.5199 },
+            
+            // South America
+            { name: 'Sao Paulo', country: 'Brazil', lat: -23.5505, lon: -46.6333 },
+            { name: 'Rio de Janeiro', country: 'Brazil', lat: -22.9068, lon: -43.1729 },
+            { name: 'Brasilia', country: 'Brazil', lat: -15.8267, lon: -47.9218 },
+            { name: 'Salvador', country: 'Brazil', lat: -12.9714, lon: -38.5014 },
+            { name: 'Fortaleza', country: 'Brazil', lat: -3.7172, lon: -38.5433 },
+            { name: 'Recife', country: 'Brazil', lat: -8.0476, lon: -34.8770 },
+            { name: 'Manaus', country: 'Brazil', lat: -3.1190, lon: -60.0217 },
+            { name: 'Curitiba', country: 'Brazil', lat: -25.4284, lon: -49.2733 },
+            { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lon: -58.3816 },
+            { name: 'Cordoba', country: 'Argentina', lat: -31.4201, lon: -64.1888 },
+            { name: 'Rosario', country: 'Argentina', lat: -32.9442, lon: -60.6505 },
+            { name: 'Mendoza', country: 'Argentina', lat: -32.8895, lon: -68.8458 },
+            { name: 'Santiago', country: 'Chile', lat: -33.4489, lon: -70.6693 },
+            { name: 'Valparaiso', country: 'Chile', lat: -33.0472, lon: -71.6127 },
+            { name: 'Lima', country: 'Peru', lat: -12.0464, lon: -77.0428 },
+            { name: 'Cusco', country: 'Peru', lat: -13.5319, lon: -71.9675 },
+            { name: 'Bogota', country: 'Colombia', lat: 4.7110, lon: -74.0721 },
+            { name: 'Medellin', country: 'Colombia', lat: 6.2442, lon: -75.5812 },
+            { name: 'Cartagena', country: 'Colombia', lat: 10.3910, lon: -75.4794 },
+            { name: 'Quito', country: 'Ecuador', lat: -0.1807, lon: -78.4678 },
+            { name: 'Guayaquil', country: 'Ecuador', lat: -2.1709, lon: -79.9224 },
+            { name: 'Caracas', country: 'Venezuela', lat: 10.4806, lon: -66.9036 },
+            { name: 'La Paz', country: 'Bolivia', lat: -16.5000, lon: -68.1500 },
+            { name: 'Montevideo', country: 'Uruguay', lat: -34.9011, lon: -56.1645 },
+            
+            // Europe - Western
+            { name: 'London', country: 'United Kingdom', lat: 51.5074, lon: -0.1278 },
+            { name: 'Manchester', country: 'United Kingdom', lat: 53.4808, lon: -2.2426 },
+            { name: 'Edinburgh', country: 'United Kingdom', lat: 55.9533, lon: -3.1883 },
+            { name: 'Dublin', country: 'Ireland', lat: 53.3498, lon: -6.2603 },
+            { name: 'Paris', country: 'France', lat: 48.8566, lon: 2.3522 },
+            { name: 'Lyon', country: 'France', lat: 45.7640, lon: 4.8357 },
+            { name: 'Marseille', country: 'France', lat: 43.2965, lon: 5.3698 },
+            { name: 'Nice', country: 'France', lat: 43.7102, lon: 7.2620 },
+            { name: 'Bordeaux', country: 'France', lat: 44.8378, lon: -0.5792 },
+            { name: 'Berlin', country: 'Germany', lat: 52.5200, lon: 13.4050 },
+            { name: 'Munich', country: 'Germany', lat: 48.1351, lon: 11.5820 },
+            { name: 'Hamburg', country: 'Germany', lat: 53.5511, lon: 9.9937 },
+            { name: 'Frankfurt', country: 'Germany', lat: 50.1109, lon: 8.6821 },
+            { name: 'Cologne', country: 'Germany', lat: 50.9375, lon: 6.9603 },
+            { name: 'Madrid', country: 'Spain', lat: 40.4168, lon: -3.7038 },
+            { name: 'Barcelona', country: 'Spain', lat: 41.3851, lon: 2.1734 },
+            { name: 'Valencia', country: 'Spain', lat: 39.4699, lon: -0.3763 },
+            { name: 'Seville', country: 'Spain', lat: 37.3891, lon: -5.9845 },
+            { name: 'Malaga', country: 'Spain', lat: 36.7213, lon: -4.4214 },
+            { name: 'Ibiza', country: 'Spain', lat: 38.9067, lon: 1.4206 },
+            { name: 'Rome', country: 'Italy', lat: 41.9028, lon: 12.4964 },
+            { name: 'Milan', country: 'Italy', lat: 45.4642, lon: 9.1900 },
+            { name: 'Venice', country: 'Italy', lat: 45.4408, lon: 12.3155 },
+            { name: 'Florence', country: 'Italy', lat: 43.7696, lon: 11.2558 },
+            { name: 'Naples', country: 'Italy', lat: 40.8518, lon: 14.2681 },
+            { name: 'Amsterdam', country: 'Netherlands', lat: 52.3676, lon: 4.9041 },
+            { name: 'Rotterdam', country: 'Netherlands', lat: 51.9225, lon: 4.4792 },
+            { name: 'Brussels', country: 'Belgium', lat: 50.8503, lon: 4.3517 },
+            { name: 'Antwerp', country: 'Belgium', lat: 51.2194, lon: 4.4025 },
+            { name: 'Zurich', country: 'Switzerland', lat: 47.3769, lon: 8.5417 },
+            { name: 'Geneva', country: 'Switzerland', lat: 46.2044, lon: 6.1432 },
+            { name: 'Vienna', country: 'Austria', lat: 48.2082, lon: 16.3738 },
+            { name: 'Salzburg', country: 'Austria', lat: 47.8095, lon: 13.0550 },
+            { name: 'Lisbon', country: 'Portugal', lat: 38.7223, lon: -9.1393 },
+            { name: 'Porto', country: 'Portugal', lat: 41.1579, lon: -8.6291 },
+            
+            // Europe - Northern
+            { name: 'Stockholm', country: 'Sweden', lat: 59.3293, lon: 18.0686 },
+            { name: 'Gothenburg', country: 'Sweden', lat: 57.7089, lon: 11.9746 },
+            { name: 'Oslo', country: 'Norway', lat: 59.9139, lon: 10.7522 },
+            { name: 'Bergen', country: 'Norway', lat: 60.3913, lon: 5.3221 },
+            { name: 'Copenhagen', country: 'Denmark', lat: 55.6761, lon: 12.5683 },
+            { name: 'Helsinki', country: 'Finland', lat: 60.1699, lon: 24.9384 },
+            { name: 'Reykjavik', country: 'Iceland', lat: 64.1466, lon: -21.9426 },
+            
+            // Europe - Eastern
+            { name: 'Moscow', country: 'Russia', lat: 55.7558, lon: 37.6173 },
+            { name: 'St Petersburg', country: 'Russia', lat: 59.9343, lon: 30.3351 },
+            { name: 'Warsaw', country: 'Poland', lat: 52.2297, lon: 21.0122 },
+            { name: 'Krakow', country: 'Poland', lat: 50.0647, lon: 19.9450 },
+            { name: 'Prague', country: 'Czech Republic', lat: 50.0755, lon: 14.4378 },
+            { name: 'Budapest', country: 'Hungary', lat: 47.4979, lon: 19.0402 },
+            { name: 'Bucharest', country: 'Romania', lat: 44.4268, lon: 26.1025 },
+            { name: 'Athens', country: 'Greece', lat: 37.9838, lon: 23.7275 },
+            { name: 'Santorini', country: 'Greece', lat: 36.3932, lon: 25.4615 },
+            { name: 'Mykonos', country: 'Greece', lat: 37.4467, lon: 25.3289 },
+            { name: 'Istanbul', country: 'Turkey', lat: 41.0082, lon: 28.9784 },
+            { name: 'Ankara', country: 'Turkey', lat: 39.9334, lon: 32.8597 },
+            { name: 'Antalya', country: 'Turkey', lat: 36.8969, lon: 30.7133 },
+            
+            // Middle East
+            { name: 'Dubai', country: 'UAE', lat: 25.2048, lon: 55.2708 },
+            { name: 'Abu Dhabi', country: 'UAE', lat: 24.4539, lon: 54.3773 },
+            { name: 'Doha', country: 'Qatar', lat: 25.2854, lon: 51.5310 },
+            { name: 'Riyadh', country: 'Saudi Arabia', lat: 24.7136, lon: 46.6753 },
+            { name: 'Jeddah', country: 'Saudi Arabia', lat: 21.5433, lon: 39.1728 },
+            { name: 'Tel Aviv', country: 'Israel', lat: 32.0853, lon: 34.7818 },
+            { name: 'Jerusalem', country: 'Israel', lat: 31.7683, lon: 35.2137 },
+            { name: 'Beirut', country: 'Lebanon', lat: 33.8938, lon: 35.5018 },
+            { name: 'Amman', country: 'Jordan', lat: 31.9454, lon: 35.9284 },
+            { name: 'Tehran', country: 'Iran', lat: 35.6892, lon: 51.3890 },
+            
+            // Africa
+            { name: 'Cairo', country: 'Egypt', lat: 30.0444, lon: 31.2357 },
+            { name: 'Alexandria', country: 'Egypt', lat: 31.2001, lon: 29.9187 },
+            { name: 'Marrakech', country: 'Morocco', lat: 31.6295, lon: -7.9811 },
+            { name: 'Casablanca', country: 'Morocco', lat: 33.5731, lon: -7.5898 },
+            { name: 'Cape Town', country: 'South Africa', lat: -33.9249, lon: 18.4241 },
+            { name: 'Johannesburg', country: 'South Africa', lat: -26.2041, lon: 28.0473 },
+            { name: 'Durban', country: 'South Africa', lat: -29.8587, lon: 31.0218 },
+            { name: 'Nairobi', country: 'Kenya', lat: -1.2921, lon: 36.8219 },
+            { name: 'Lagos', country: 'Nigeria', lat: 6.5244, lon: 3.3792 },
+            { name: 'Accra', country: 'Ghana', lat: 5.6037, lon: -0.1870 },
+            { name: 'Addis Ababa', country: 'Ethiopia', lat: 9.0320, lon: 38.7469 },
+            { name: 'Tunis', country: 'Tunisia', lat: 36.8065, lon: 10.1815 },
+            
+            // Asia - East
+            { name: 'Beijing', country: 'China', lat: 39.9042, lon: 116.4074 },
+            { name: 'Shanghai', country: 'China', lat: 31.2304, lon: 121.4737 },
+            { name: 'Hong Kong', country: 'China', lat: 22.3193, lon: 114.1694 },
+            { name: 'Shenzhen', country: 'China', lat: 22.5431, lon: 114.0579 },
+            { name: 'Guangzhou', country: 'China', lat: 23.1291, lon: 113.2644 },
+            { name: 'Chengdu', country: 'China', lat: 30.5728, lon: 104.0668 },
+            { name: 'Tokyo', country: 'Japan', lat: 35.6762, lon: 139.6503 },
+            { name: 'Osaka', country: 'Japan', lat: 34.6937, lon: 135.5023 },
+            { name: 'Kyoto', country: 'Japan', lat: 35.0116, lon: 135.7681 },
+            { name: 'Hiroshima', country: 'Japan', lat: 34.3853, lon: 132.4553 },
+            { name: 'Sapporo', country: 'Japan', lat: 43.0642, lon: 141.3469 },
+            { name: 'Seoul', country: 'South Korea', lat: 37.5665, lon: 126.9780 },
+            { name: 'Busan', country: 'South Korea', lat: 35.1796, lon: 129.0756 },
+            { name: 'Jeju', country: 'South Korea', lat: 33.4996, lon: 126.5312 },
+            { name: 'Taipei', country: 'Taiwan', lat: 25.0330, lon: 121.5654 },
+            
+            // Asia - South & Southeast
+            { name: 'Mumbai', country: 'India', lat: 19.0760, lon: 72.8777 },
+            { name: 'Delhi', country: 'India', lat: 28.7041, lon: 77.1025 },
+            { name: 'Bangalore', country: 'India', lat: 12.9716, lon: 77.5946 },
+            { name: 'Chennai', country: 'India', lat: 13.0827, lon: 80.2707 },
+            { name: 'Kolkata', country: 'India', lat: 22.5726, lon: 88.3639 },
+            { name: 'Jaipur', country: 'India', lat: 26.9124, lon: 75.7873 },
+            { name: 'Goa', country: 'India', lat: 15.2993, lon: 74.1240 },
+            { name: 'Bangkok', country: 'Thailand', lat: 13.7563, lon: 100.5018 },
+            { name: 'Phuket', country: 'Thailand', lat: 7.8804, lon: 98.3923 },
+            { name: 'Chiang Mai', country: 'Thailand', lat: 18.7883, lon: 98.9853 },
+            { name: 'Singapore', country: 'Singapore', lat: 1.3521, lon: 103.8198 },
+            { name: 'Kuala Lumpur', country: 'Malaysia', lat: 3.1390, lon: 101.6869 },
+            { name: 'Penang', country: 'Malaysia', lat: 5.4141, lon: 100.3288 },
+            { name: 'Jakarta', country: 'Indonesia', lat: -6.2088, lon: 106.8456 },
+            { name: 'Bali', country: 'Indonesia', lat: -8.3405, lon: 115.0920 },
+            { name: 'Manila', country: 'Philippines', lat: 14.5995, lon: 120.9842 },
+            { name: 'Hanoi', country: 'Vietnam', lat: 21.0285, lon: 105.8542 },
+            { name: 'Ho Chi Minh City', country: 'Vietnam', lat: 10.8231, lon: 106.6297 },
+            
+            // Oceania
+            { name: 'Sydney', country: 'Australia', lat: -33.8688, lon: 151.2093 },
+            { name: 'Melbourne', country: 'Australia', lat: -37.8136, lon: 144.9631 },
+            { name: 'Brisbane', country: 'Australia', lat: -27.4698, lon: 153.0251 },
+            { name: 'Perth', country: 'Australia', lat: -31.9505, lon: 115.8605 },
+            { name: 'Adelaide', country: 'Australia', lat: -34.9285, lon: 138.6007 },
+            { name: 'Gold Coast', country: 'Australia', lat: -28.0167, lon: 153.4000 },
+            { name: 'Auckland', country: 'New Zealand', lat: -36.8485, lon: 174.7633 },
+            { name: 'Wellington', country: 'New Zealand', lat: -41.2865, lon: 174.7762 },
+            { name: 'Queenstown', country: 'New Zealand', lat: -45.0312, lon: 168.6626 },
+            { name: 'Fiji', country: 'Fiji', lat: -17.7134, lon: 178.0650 }
+        ];
+        
+        let birthData = {
+            name: '',
+            date: null,
+            time: null,
+            location: null,
+            lat: null,
+            lon: null
+        };
+        
+        let calculatedPlanetaryPositions = {};
+        
+        const planetColors = {
+            sun: '#FFD700',
+            moon: '#C0C0C0',
+            mercury: '#87CEEB',
+            venus: '#FF69B4',
+            mars: '#FF4500',
+            jupiter: '#FFA500',
+            saturn: '#8B4513',
+            mc: '#FFFFFF',
+            ic: '#CCCCCC',
+            asc: '#E0E0E0',
+            dsc: '#B0B0B0'
+        };
+        
+        const planetSymbols = {
+            sun: '☉',
+            moon: '☽',
+            mercury: '☿',
+            venus: '♀',
+            mars: '♂',
+            jupiter: '♃',
+            saturn: '♄',
+            mc: 'MC',
+            ic: 'IC',
+            asc: 'AC',
+            dsc: 'DC'
+        };
+        
+        const planetNames = {
+            sun: 'Sun',
+            moon: 'Moon',
+            mercury: 'Mercury',
+            venus: 'Venus',
+            mars: 'Mars',
+            jupiter: 'Jupiter',
+            saturn: 'Saturn',
+            mc: 'Midheaven',
+            ic: 'IC',
+            asc: 'Ascendant',
+            dsc: 'Descendant'
+        };
+        
+        const categoryPlanets = {
+            career: ['sun', 'jupiter', 'mc', 'saturn'],
+            studies: ['mercury', 'jupiter', 'sun'],
+            love: ['venus', 'moon', 'dsc'],
+            family: ['moon', 'ic', 'venus']
+        };
+        
+        const categorySubtitles = {
+            career: 'These are the places where your professional star shines brightest.',
+            studies: 'Here, your mind expands and learning flows naturally.',
+            love: 'In these locations, romance and connection flourish.',
+            family: 'These places feel like home, nurturing your roots.'
+        };
+        
+        // Autocomplete
+        const birthLocationInput = document.getElementById('birthLocation');
+        const suggestionsDiv = document.getElementById('suggestions');
+        
+        birthLocationInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            
+            if (query.length < 2) {
+                suggestionsDiv.classList.remove('active');
+                return;
+            }
+            
+            const matches = worldCities.filter(city => 
+                city.name.toLowerCase().includes(query) || 
+                city.country.toLowerCase().includes(query)
+            ).slice(0, 8);
+            
+            if (matches.length > 0) {
+                suggestionsDiv.innerHTML = '';
+                matches.forEach(city => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `
+                        <div style="font-weight: 500;">${city.name}</div>
+                        <div style="font-size: 0.875rem; color: #999;">${city.country}</div>
+                    `;
+                    div.onclick = function() {
+                        selectCity(city.name, city.country, city.lat, city.lon);
+                    };
+                    suggestionsDiv.appendChild(div);
+                });
+                suggestionsDiv.classList.add('active');
+            } else {
+                suggestionsDiv.classList.remove('active');
+            }
+        });
+        
+        function selectCity(name, country, lat, lon) {
+            birthLocationInput.value = name + ', ' + country;
+            birthData.lat = lat;
+            birthData.lon = lon;
+            suggestionsDiv.classList.remove('active');
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.input-group')) {
+                suggestionsDiv.classList.remove('active');
+            }
+        });
+        
+        function goToHomepage() {
+            const currentScreen = document.querySelector('.screen.active').id;
+            
+            if (currentScreen === 'screen1') {
+                return;
+            }
+            
+            const confirmMsg = currentScreen === 'screen2' 
+                ? 'Are you sure you want to start over? Your birth details will be cleared.'
+                : 'Are you sure you want to start over? Your map and birth details will be lost.';
+            
+            if (confirm(confirmMsg)) {
+                birthData = {
+                    name: '',
+                    date: null,
+                    time: null,
+                    location: null,
+                    lat: null,
+                    lon: null
+                };
+                calculatedPlanetaryPositions = {};
+                
+                document.getElementById('userName').value = '';
+                document.getElementById('birthDate').value = '';
+                document.getElementById('birthTime').value = '';
+                document.getElementById('birthLocation').value = '';
+                
+                nextScreen(1);
+            }
+        }
+        
+        function validateAndContinue() {
+            const name = document.getElementById('userName').value.trim();
+            const date = document.getElementById('birthDate').value;
+            const time = document.getElementById('birthTime').value;
+            const location = document.getElementById('birthLocation').value;
+            
+            let valid = true;
+            
+            if (!name) {
+                document.getElementById('nameError').textContent = 'We would love to know your name';
+                valid = false;
+            } else {
+                document.getElementById('nameError').textContent = '';
+            }
+            
+            if (!date) {
+                document.getElementById('dateError').textContent = 'Your birth date helps us map the stars';
+                valid = false;
+            } else {
+                document.getElementById('dateError').textContent = '';
+            }
+            
+            if (!time) {
+                document.getElementById('timeError').textContent = 'Exact timing matters for accuracy';
+                valid = false;
+            } else {
+                document.getElementById('timeError').textContent = '';
+            }
+            
+            if (!location) {
+                document.getElementById('locationError').textContent = 'Where did your journey begin?';
+                valid = false;
+            } else {
+                document.getElementById('locationError').textContent = '';
+            }
+            
+            if (valid) {
+                birthData.name = name;
+                birthData.date = date;
+                birthData.time = time;
+                birthData.location = location;
+                
+                calculatePlanetaryPositions();
+                document.getElementById('greetingText').textContent = 'Hi ' + name + ',';
+                
+                nextScreen(2);
+            }
+        }
+        
+        function calculatePlanetaryPositions() {
+            const dateObj = new Date(birthData.date + 'T' + birthData.time);
+            const julianDay = dateObj.getTime() / 86400000 + 2440587.5;
+            
+            calculatedPlanetaryPositions = {
+                sun: (280.46 + 0.9856474 * (julianDay - 2451545)) % 360,
+                moon: (218.32 + 13.1763966 * (julianDay - 2451545)) % 360,
+                mercury: (252.25 + 4.092385 * (julianDay - 2451545)) % 360,
+                venus: (181.98 + 1.602130 * (julianDay - 2451545)) % 360,
+                mars: (355.43 + 0.524033 * (julianDay - 2451545)) % 360,
+                jupiter: (34.35 + 0.083056 * (julianDay - 2451545)) % 360,
+                saturn: (50.08 + 0.033371 * (julianDay - 2451545)) % 360
+            };
+            
+            const timeHours = parseFloat(birthData.time.split(':')[0]) + parseFloat(birthData.time.split(':')[1]) / 60;
+            const lst = (100.46 + 0.985647 * (julianDay - 2451545) + birthData.lon + (timeHours * 15)) % 360;
+            
+            calculatedPlanetaryPositions.asc = lst;
+            calculatedPlanetaryPositions.mc = (lst + 90) % 360;
+            calculatedPlanetaryPositions.dsc = (lst + 180) % 360;
+            calculatedPlanetaryPositions.ic = (lst + 270) % 360;
+        }
+        
+        function nextScreen(screenNumber) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + screenNumber).classList.add('active');
+        }
+        
+        function calculateMap(category) {
+            const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1);
+            document.getElementById('selectedCategory').textContent = 'Your ' + categoryTitle + ' Map';
+            document.getElementById('mapSubtitle').textContent = categorySubtitles[category];
+            
+            nextScreen(3);
+            
+            const planets = categoryPlanets[category];
+            drawAstrocartographyMap(planets, category);
+        }
+        
+        function drawAstrocartographyMap(planets, category) {
+            const canvas = document.getElementById('mapCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 900;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            drawWorldMapSVG(ctx, width, height);
+            
+            const citiesOnLines = calculateCitiesOnPlanetaryLines(planets);
+            
+            drawAstroLines(ctx, width, height, planets);
+            drawCityMarkers(ctx, width, height, citiesOnLines);
+            
+            updateLegend(planets);
+            showInterpretations(category, planets);
+            showCityList(citiesOnLines, category);
+        }
+        
+        function calculateCitiesOnPlanetaryLines(planets) {
+            const citiesOnLines = [];
+            
+            planets.forEach(planet => {
+                const planetLon = calculatedPlanetaryPositions[planet];
+                
+                worldCities.forEach(city => {
+                    const lineLon1 = planetLon - 180;
+                    const lineLon2 = planetLon;
+                    
+                    const diff1 = Math.abs(normalizeLon(city.lon - lineLon1));
+                    const diff2 = Math.abs(normalizeLon(city.lon - lineLon2));
+                    
+                    if (diff1 < 10 || diff2 < 10) {
+                        const existingCity = citiesOnLines.find(c => c.name === city.name);
+                        if (existingCity) {
+                            if (!existingCity.planets.includes(planet)) {
+                                existingCity.planets.push(planet);
+                            }
+                        } else {
+                            citiesOnLines.push({
+                                name: city.name,
+                                country: city.country,
+                                lat: city.lat,
+                                lon: city.lon,
+                                planets: [planet]
+                            });
+                        }
+                    }
+                });
+            });
+            
+            citiesOnLines.sort((a, b) => b.planets.length - a.planets.length);
+            
+            return citiesOnLines.slice(0, 8);
+        }
+        
+        function normalizeLon(lon) {
+            while (lon > 180) lon -= 360;
+            while (lon < -180) lon += 360;
+            return lon;
+        }
+        
+        function drawWorldMapSVG(ctx, width, height) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2.5;
+            ctx.fillStyle = '#0a0a0a';
+            
+            const scaleX = width / 360;
+            const scaleY = height / 180;
+            
+            function lon2x(lon) { return (lon + 180) * scaleX; }
+            function lat2y(lat) { return (90 - lat) * scaleY; }
+            
+            // North America
+            ctx.beginPath();
+            ctx.moveTo(lon2x(-170), lat2y(65));
+            ctx.lineTo(lon2x(-160), lat2y(70));
+            ctx.lineTo(lon2x(-140), lat2y(70));
+            ctx.lineTo(lon2x(-130), lat2y(60));
+            ctx.lineTo(lon2x(-125), lat2y(50));
+            ctx.lineTo(lon2x(-123), lat2y(48));
+            ctx.lineTo(lon2x(-80), lat2y(45));
+            ctx.lineTo(lon2x(-70), lat2y(45));
+            ctx.lineTo(lon2x(-80), lat2y(25));
+            ctx.lineTo(lon2x(-97), lat2y(26));
+            ctx.lineTo(lon2x(-115), lat2y(32));
+            ctx.lineTo(lon2x(-90), lat2y(16));
+            ctx.lineTo(lon2x(-85), lat2y(15));
+            ctx.lineTo(lon2x(-100), lat2y(30));
+            ctx.lineTo(lon2x(-125), lat2y(50));
+            ctx.lineTo(lon2x(-150), lat2y(62));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // South America
+            ctx.beginPath();
+            ctx.moveTo(lon2x(-80), lat2y(12));
+            ctx.lineTo(lon2x(-75), lat2y(0));
+            ctx.lineTo(lon2x(-70), lat2y(-10));
+            ctx.lineTo(lon2x(-60), lat2y(-30));
+            ctx.lineTo(lon2x(-55), lat2y(-35));
+            ctx.lineTo(lon2x(-50), lat2y(-20));
+            ctx.lineTo(lon2x(-40), lat2y(-5));
+            ctx.lineTo(lon2x(-35), lat2y(0));
+            ctx.lineTo(lon2x(-50), lat2y(5));
+            ctx.lineTo(lon2x(-70), lat2y(10));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Europe
+            ctx.beginPath();
+            ctx.moveTo(lon2x(-10), lat2y(60));
+            ctx.lineTo(lon2x(0), lat2y(58));
+            ctx.lineTo(lon2x(10), lat2y(55));
+            ctx.lineTo(lon2x(20), lat2y(55));
+            ctx.lineTo(lon2x(30), lat2y(60));
+            ctx.lineTo(lon2x(30), lat2y(70));
+            ctx.lineTo(lon2x(10), lat2y(63));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Africa
+            ctx.beginPath();
+            ctx.moveTo(lon2x(-10), lat2y(35));
+            ctx.lineTo(lon2x(10), lat2y(37));
+            ctx.lineTo(lon2x(30), lat2y(32));
+            ctx.lineTo(lon2x(40), lat2y(20));
+            ctx.lineTo(lon2x(50), lat2y(0));
+            ctx.lineTo(lon2x(50), lat2y(-20));
+            ctx.lineTo(lon2x(35), lat2y(-35));
+            ctx.lineTo(lon2x(20), lat2y(-33));
+            ctx.lineTo(lon2x(10), lat2y(0));
+            ctx.lineTo(lon2x(0), lat2y(10));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Asia
+            ctx.beginPath();
+            ctx.moveTo(lon2x(35), lat2y(70));
+            ctx.lineTo(lon2x(60), lat2y(72));
+            ctx.lineTo(lon2x(100), lat2y(70));
+            ctx.lineTo(lon2x(140), lat2y(62));
+            ctx.lineTo(lon2x(145), lat2y(55));
+            ctx.lineTo(lon2x(150), lat2y(45));
+            ctx.lineTo(lon2x(135), lat2y(20));
+            ctx.lineTo(lon2x(100), lat2y(20));
+            ctx.lineTo(lon2x(70), lat2y(30));
+            ctx.lineTo(lon2x(50), lat2y(40));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Australia
+            ctx.beginPath();
+            ctx.moveTo(lon2x(115), lat2y(-15));
+            ctx.lineTo(lon2x(130), lat2y(-12));
+            ctx.lineTo(lon2x(145), lat2y(-15));
+            ctx.lineTo(lon2x(150), lat2y(-35));
+            ctx.lineTo(lon2x(130), lat2y(-35));
+            ctx.lineTo(lon2x(115), lat2y(-32));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        
+        function drawAstroLines(ctx, width, height, planets) {
+            planets.forEach(planet => {
+                const color = planetColors[planet];
+                const planetLon = calculatedPlanetaryPositions[planet];
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.7;
+                
+                const x1 = ((planetLon + 180) % 360) / 360 * width;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, 0);
+                ctx.lineTo(x1, height);
+                ctx.stroke();
+                
+                // Add planet symbol at top of line
+                ctx.globalAlpha = 1;
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                
+                // Background circle for symbol
+                const symbolY = 30;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.beginPath();
+                ctx.arc(x1, symbolY, 20, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Symbol itself
+                ctx.fillStyle = color;
+                ctx.fillText(planetSymbols[planet], x1, symbolY + 8);
+                ctx.textAlign = 'left';
+                
+                if (['mc', 'ic', 'asc', 'dsc'].includes(planet)) {
+                    const y = (Math.random() * 0.6 + 0.2) * height;
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = 0.7;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                    
+                    // Add symbol on left side for horizontal lines
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(30, y, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(planetSymbols[planet], 30, y + 8);
+                    ctx.textAlign = 'left';
+                }
+            });
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawCityMarkers(ctx, width, height, cities) {
+            cities.forEach(city => {
+                const x = ((city.lon + 180) / 360) * width;
+                const y = ((90 - city.lat) / 180) * height;
+                
+                // Draw larger marker with glow effect
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Add pulse ring
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, y, 14, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Draw city name with better visibility
+                ctx.font = 'bold 16px sans-serif';
+                const textWidth = ctx.measureText(city.name).width;
+                
+                // Black background with more padding
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(x + 18, y - 14, textWidth + 12, 28);
+                
+                // White border around text box
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x + 18, y - 14, textWidth + 12, 28);
+                
+                // City name in white
+                ctx.fillStyle = '#fff';
+                ctx.fillText(city.name, x + 24, y + 5);
+            });
+        }
+        
+        function updateLegend(planets) {
+            const legend = document.getElementById('legend');
+            legend.innerHTML = '';
+            
+            planets.forEach(planet => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const symbol = document.createElement('span');
+                symbol.style.fontSize = '1.5rem';
+                symbol.style.marginRight = '0.5rem';
+                symbol.textContent = planetSymbols[planet];
+                
+                const line = document.createElement('div');
+                line.className = 'legend-line';
+                line.style.backgroundColor = planetColors[planet];
+                
+                const name = document.createElement('span');
+                name.textContent = planetNames[planet];
+                
+                item.appendChild(symbol);
+                item.appendChild(line);
+                item.appendChild(name);
+                legend.appendChild(item);
+            });
+        }
+        
+        function showInterpretations(category, planets) {
+            const interpretations = document.getElementById('interpretations');
+            
+            const meanings = {
+                career: {
+                    sun: 'Your authentic leadership and creative self-expression flourish',
+                    jupiter: 'Opportunities multiply and success comes naturally',
+                    mc: 'Professional recognition and career advancement peak',
+                    saturn: 'Hard work builds lasting legacy and authority'
+                },
+                studies: {
+                    mercury: 'Your mind is sharp, communication flows effortlessly',
+                    jupiter: 'Wisdom expands through education and philosophical growth',
+                    sun: 'Intellectual pursuits feel purposeful and fulfilling'
+                },
+                love: {
+                    venus: 'Romance blooms, relationships feel magical and harmonious',
+                    moon: 'Emotional intimacy deepens, nurturing comes naturally',
+                    dsc: 'Meaningful partnerships and committed love thrive'
+                },
+                family: {
+                    moon: 'You feel emotionally safe, nurtured, and at home',
+                    ic: 'Deep roots form, connecting you to ancestry and belonging',
+                    venus: 'Family harmony, domestic bliss, and comfort abound'
+                }
+            };
+            
+            let html = '<div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #222;">';
+            html += '<h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #999;">What Each Line Means</h3>';
+            
+            planets.forEach(planet => {
+                if (meanings[category][planet]) {
+                    html += '<div style="margin-bottom: 1rem; padding: 0.75rem; border-left: 2px solid ' + planetColors[planet] + ';">';
+                    html += '<div style="font-weight: 500; margin-bottom: 0.25rem;">' + planetNames[planet] + '</div>';
+                    html += '<div style="font-size: 0.875rem; color: #999;">' + meanings[category][planet] + '</div>';
+                    html += '</div>';
+                }
+            });
+            
+            html += '</div>';
+            interpretations.innerHTML = html;
+        }
+        
+        function showCityList(cities, category) {
+            const cityList = document.getElementById('cityList');
+            
+            if (cities.length === 0) {
+                cityList.innerHTML = '<p style="color: #999;">Calculating your strongest locations...</p>';
+                return;
+            }
+            
+            let html = '<h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #999;">Your Strongest Locations</h3>';
+            html += '<p style="color: #999; font-size: 0.875rem; margin-bottom: 1rem;">These cities sit on your most powerful planetary lines for ' + category + '.</p>';
+            
+            cities.forEach(city => {
+                const planetsList = city.planets.map(p => planetNames[p]).join(', ');
+                html += '<div class="city-item">';
+                html += '<div>';
+                html += '<div class="city-name">' + city.name + '</div>';
+                html += '<div class="city-country">' + city.country + '</div>';
+                html += '</div>';
+                html += '<div class="city-lines">' + planetsList + '</div>';
+                html += '</div>';
+            });
+            
+            cityList.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
