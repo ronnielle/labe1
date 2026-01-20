@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -189,16 +190,30 @@
         
         .map-container {
             border: 1px solid #333;
-            padding: 2rem;
+            padding: 1rem;
             background: #000;
             position: relative;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         #mapCanvas {
             width: 100%;
-            height: 900px;
+            min-width: 800px;
+            height: 600px;
             display: block;
+        }
+        
+        @media (min-width: 768px) {
+            .map-container {
+                padding: 2rem;
+            }
+            
+            #mapCanvas {
+                min-width: 100%;
+                height: 900px;
+            }
         }
         
         .back-btn {
@@ -284,6 +299,175 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        
+        .tab-navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            color: #fff;
+        }
+        
+        .tab.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+        
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        #chartCanvas {
+            border: 1px solid #333;
+        }
+        
+        .chart-info {
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .planet-position {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #222;
+        }
+        
+        .planet-symbol {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        .planet-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .planet-sign {
+            font-size: 0.875rem;
+            color: #999;
+        }
+        
+        .planet-degree {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            .logo {
+                font-size: 2rem;
+                letter-spacing: 4px;
+                margin-bottom: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            input {
+                padding: 0.875rem;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .btn {
+                padding: 0.875rem;
+                font-size: 0.95rem;
+            }
+            
+            .category-card {
+                padding: 1.5rem;
+            }
+            
+            .category-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .category-card p {
+                font-size: 0.8rem;
+            }
+            
+            .legend {
+                gap: 1rem;
+            }
+            
+            .legend-item {
+                font-size: 0.8rem;
+            }
+            
+            .city-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .city-lines {
+                font-size: 0.7rem;
+            }
+            
+            .map-info {
+                padding: 1rem;
+            }
+            
+            .tab-navigation {
+                gap: 0.5rem;
+                overflow-x: auto;
+            }
+            
+            .tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                white-space: nowrap;
+            }
+            
+            #chartCanvas {
+                width: 100%;
+                height: auto;
+            }
+            
+            .planet-position {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -350,15 +534,34 @@
             <div class="logo" onclick="goToHomepage()">LABE</div>
             <h2 id="selectedCategory">Your Map</h2>
             <p class="subtitle" id="mapSubtitle"></p>
-            <div class="map-container">
-                <canvas id="mapCanvas"></canvas>
+            
+            <div class="tab-navigation">
+                <button class="tab active" onclick="switchTab('map')">Astrocartography Map</button>
+                <button class="tab" onclick="switchTab('chart')">Natal Chart</button>
             </div>
-            <div class="map-info">
-                <h3>Your Planetary Lines</h3>
-                <div class="legend" id="legend"></div>
-                <div id="interpretations"></div>
-                <div class="city-list" id="cityList"></div>
+            
+            <div id="mapView">
+                <div class="map-container">
+                    <canvas id="mapCanvas"></canvas>
+                </div>
+                <div class="map-info">
+                    <h3>Your Planetary Lines</h3>
+                    <div class="legend" id="legend"></div>
+                    <div id="interpretations"></div>
+                    <div class="city-list" id="cityList"></div>
+                </div>
             </div>
+            
+            <div id="chartView" style="display: none;">
+                <div class="chart-container">
+                    <canvas id="chartCanvas" width="500" height="500"></canvas>
+                    <div class="chart-info">
+                        <h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #999;">Your Planetary Positions</h3>
+                        <div id="planetPositions"></div>
+                    </div>
+                </div>
+            </div>
+            
             <button class="btn back-btn" onclick="nextScreen(2)">Explore Another Path</button>
         </div>
     </div>
@@ -622,6 +825,21 @@
             dsc: 'DC'
         };
         
+        const zodiacSigns = [
+            { name: 'Aries', symbol: '♈', start: 0 },
+            { name: 'Taurus', symbol: '♉', start: 30 },
+            { name: 'Gemini', symbol: '♊', start: 60 },
+            { name: 'Cancer', symbol: '♋', start: 90 },
+            { name: 'Leo', symbol: '♌', start: 120 },
+            { name: 'Virgo', symbol: '♍', start: 150 },
+            { name: 'Libra', symbol: '♎', start: 180 },
+            { name: 'Scorpio', symbol: '♏', start: 210 },
+            { name: 'Sagittarius', symbol: '♐', start: 240 },
+            { name: 'Capricorn', symbol: '♑', start: 270 },
+            { name: 'Aquarius', symbol: '♒', start: 300 },
+            { name: 'Pisces', symbol: '♓', start: 330 }
+        ];
+        
         const planetNames = {
             sun: 'Sun',
             moon: 'Moon',
@@ -637,10 +855,10 @@
         };
         
         const categoryPlanets = {
-            career: ['sun', 'jupiter', 'mc', 'saturn'],
+            career: ['sun', 'jupiter', 'saturn', 'mars'],
             studies: ['mercury', 'jupiter', 'sun'],
-            love: ['venus', 'moon', 'dsc'],
-            family: ['moon', 'ic', 'venus']
+            love: ['venus', 'moon'],
+            family: ['moon', 'venus', 'jupiter']
         };
         
         const categorySubtitles = {
@@ -782,25 +1000,212 @@
         
         function calculatePlanetaryPositions() {
             const dateObj = new Date(birthData.date + 'T' + birthData.time);
-            const julianDay = dateObj.getTime() / 86400000 + 2440587.5;
+            const julianDay = dateToJulianDay(dateObj);
             
+            // Calculate planetary positions using simplified astronomical algorithms
             calculatedPlanetaryPositions = {
-                sun: (280.46 + 0.9856474 * (julianDay - 2451545)) % 360,
-                moon: (218.32 + 13.1763966 * (julianDay - 2451545)) % 360,
-                mercury: (252.25 + 4.092385 * (julianDay - 2451545)) % 360,
-                venus: (181.98 + 1.602130 * (julianDay - 2451545)) % 360,
-                mars: (355.43 + 0.524033 * (julianDay - 2451545)) % 360,
-                jupiter: (34.35 + 0.083056 * (julianDay - 2451545)) % 360,
-                saturn: (50.08 + 0.033371 * (julianDay - 2451545)) % 360
+                sun: calculateSunPosition(julianDay),
+                moon: calculateMoonPosition(julianDay),
+                mercury: calculateMercuryPosition(julianDay),
+                venus: calculateVenusPosition(julianDay),
+                mars: calculateMarsPosition(julianDay),
+                jupiter: calculateJupiterPosition(julianDay),
+                saturn: calculateSaturnPosition(julianDay)
             };
             
+            // Calculate houses based on birth location
             const timeHours = parseFloat(birthData.time.split(':')[0]) + parseFloat(birthData.time.split(':')[1]) / 60;
-            const lst = (100.46 + 0.985647 * (julianDay - 2451545) + birthData.lon + (timeHours * 15)) % 360;
+            const lst = calculateLocalSiderealTime(julianDay, birthData.lon, timeHours);
             
-            calculatedPlanetaryPositions.asc = lst;
-            calculatedPlanetaryPositions.mc = (lst + 90) % 360;
-            calculatedPlanetaryPositions.dsc = (lst + 180) % 360;
-            calculatedPlanetaryPositions.ic = (lst + 270) % 360;
+            calculatedPlanetaryPositions.asc = calculateAscendant(lst, birthData.lat);
+            calculatedPlanetaryPositions.mc = (lst * 15) % 360; // MC is LST in degrees
+            calculatedPlanetaryPositions.dsc = (calculatedPlanetaryPositions.asc + 180) % 360;
+            calculatedPlanetaryPositions.ic = (calculatedPlanetaryPositions.mc + 180) % 360;
+        }
+        
+        function dateToJulianDay(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hour = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600;
+            
+            let y = year;
+            let m = month;
+            
+            if (m <= 2) {
+                y -= 1;
+                m += 12;
+            }
+            
+            const a = Math.floor(y / 100);
+            const b = 2 - a + Math.floor(a / 4);
+            
+            const jd = Math.floor(365.25 * (y + 4716)) + 
+                       Math.floor(30.6001 * (m + 1)) + 
+                       day + hour / 24 + b - 1524.5;
+            
+            return jd;
+        }
+        
+        function calculateSunPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            // Mean longitude
+            let L = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+            
+            // Mean anomaly
+            let M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+            M = M * Math.PI / 180;
+            
+            // Equation of center
+            const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M) +
+                     (0.019993 - 0.000101 * T) * Math.sin(2 * M) +
+                     0.000289 * Math.sin(3 * M);
+            
+            // True longitude
+            const longitude = (L + C) % 360;
+            
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateMoonPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            // Moon's mean longitude
+            let L = 218.3164477 + 481267.88123421 * T - 0.0015786 * T * T;
+            
+            // Mean elongation
+            let D = 297.8501921 + 445267.1114034 * T - 0.0018819 * T * T;
+            D = D * Math.PI / 180;
+            
+            // Sun's mean anomaly
+            let M = 357.5291092 + 35999.0502909 * T - 0.0001536 * T * T;
+            M = M * Math.PI / 180;
+            
+            // Moon's mean anomaly
+            let Mp = 134.9633964 + 477198.8675055 * T + 0.0087414 * T * T;
+            Mp = Mp * Math.PI / 180;
+            
+            // Moon's argument of latitude
+            let F = 93.2720950 + 483202.0175233 * T - 0.0036539 * T * T;
+            F = F * Math.PI / 180;
+            
+            // Periodic terms
+            const longitude = L + 
+                6.288774 * Math.sin(Mp) +
+                1.274027 * Math.sin(2 * D - Mp) +
+                0.658314 * Math.sin(2 * D) +
+                0.213618 * Math.sin(2 * Mp) -
+                0.185116 * Math.sin(M) -
+                0.114332 * Math.sin(2 * F);
+            
+            return ((longitude % 360) + 360) % 360;
+        }
+        
+        function calculateMercuryPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            let L = 252.250906 + 149472.6746358 * T;
+            let M = 174.7948 + 149472.51529 * T;
+            M = M * Math.PI / 180;
+            
+            const C = 23.4400 * Math.sin(M) + 2.9818 * Math.sin(2 * M) + 
+                     0.5255 * Math.sin(3 * M);
+            
+            const longitude = (L + C) % 360;
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateVenusPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            let L = 181.979801 + 58517.8156760 * T;
+            let M = 50.4071 + 58517.8039 * T;
+            M = M * Math.PI / 180;
+            
+            const C = 0.7758 * Math.sin(M) + 0.0033 * Math.sin(2 * M);
+            
+            const longitude = (L + C) % 360;
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateMarsPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            let L = 355.433 + 19140.2993 * T;
+            let M = 19.3730 + 19140.299 * T;
+            M = M * Math.PI / 180;
+            
+            const C = 10.691 * Math.sin(M) + 0.623 * Math.sin(2 * M) + 
+                     0.050 * Math.sin(3 * M);
+            
+            const longitude = (L + C) % 360;
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateJupiterPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            let L = 34.351519 + 3034.9056606 * T;
+            let M = 20.020 + 3034.906 * T;
+            M = M * Math.PI / 180;
+            
+            const C = 5.555 * Math.sin(M) + 0.168 * Math.sin(2 * M);
+            
+            const longitude = (L + C) % 360;
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateSaturnPosition(jd) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            let L = 50.077444 + 1222.1138488 * T;
+            let M = 317.021 + 1222.114 * T;
+            M = M * Math.PI / 180;
+            
+            const C = 6.406 * Math.sin(M) + 0.392 * Math.sin(2 * M);
+            
+            const longitude = (L + C) % 360;
+            return longitude < 0 ? longitude + 360 : longitude;
+        }
+        
+        function calculateLocalSiderealTime(jd, lon, hours) {
+            const T = (jd - 2451545.0) / 36525.0;
+            
+            // Greenwich Mean Sidereal Time at 0h UT
+            let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 
+                      0.000387933 * T * T - T * T * T / 38710000.0;
+            
+            // Add local time offset
+            gmst += hours * 15;
+            
+            // Convert to Local Sidereal Time
+            let lst = gmst + lon;
+            
+            // Normalize to 0-360
+            lst = ((lst % 360) + 360) % 360;
+            
+            // Convert to hours
+            return lst / 15;
+        }
+        
+        function calculateAscendant(lst, lat) {
+            // Simplified ascendant calculation
+            // This uses the equal house system approximation
+            const lstDegrees = lst * 15;
+            
+            // Adjust for latitude (simplified)
+            const latRad = lat * Math.PI / 180;
+            const obliquity = 23.4397; // Earth's obliquity
+            const oblRad = obliquity * Math.PI / 180;
+            
+            // Calculate ascendant using spherical trigonometry (simplified)
+            const ramc = lstDegrees * Math.PI / 180;
+            const asc = Math.atan2(Math.cos(ramc), 
+                                   -Math.sin(ramc) * Math.cos(oblRad) - 
+                                   Math.tan(latRad) * Math.sin(oblRad)) * 180 / Math.PI;
+            
+            return ((asc % 360) + 360) % 360;
         }
         
         function nextScreen(screenNumber) {
@@ -823,8 +1228,10 @@
             const canvas = document.getElementById('mapCanvas');
             const ctx = canvas.getContext('2d');
             
-            canvas.width = canvas.offsetWidth;
-            canvas.height = 900;
+            // Responsive canvas sizing
+            const isMobile = window.innerWidth < 768;
+            canvas.width = isMobile ? 800 : canvas.offsetWidth;
+            canvas.height = isMobile ? 600 : 900;
             
             const width = canvas.width;
             const height = canvas.height;
@@ -849,19 +1256,53 @@
             
             planets.forEach(planet => {
                 const planetLon = calculatedPlanetaryPositions[planet];
+                const declination = getPlanetDeclination(planet);
                 
                 worldCities.forEach(city => {
-                    const lineLon1 = planetLon - 180;
-                    const lineLon2 = planetLon;
+                    let nearestLine = null;
+                    let minDistance = Infinity;
                     
-                    const diff1 = Math.abs(normalizeLon(city.lon - lineLon1));
-                    const diff2 = Math.abs(normalizeLon(city.lon - lineLon2));
+                    // MC Line - vertical at planet longitude
+                    const mcLon = planetLon;
+                    const mcDist = Math.abs(normalizeLon(city.lon - mcLon));
+                    if (mcDist < 5 && mcDist < minDistance) {
+                        minDistance = mcDist;
+                        nearestLine = planet + '_mc';
+                    }
                     
-                    if (diff1 < 10 || diff2 < 10) {
+                    // IC Line - vertical opposite MC
+                    const icLon = (planetLon + 180) % 360;
+                    const icDist = Math.abs(normalizeLon(city.lon - icLon));
+                    if (icDist < 5 && icDist < minDistance) {
+                        minDistance = icDist;
+                        nearestLine = planet + '_ic';
+                    }
+                    
+                    // ASC Line - curved, calculate for city's latitude
+                    const ascLon = calculateASCLongitude(planetLon, declination, city.lat);
+                    if (ascLon !== null) {
+                        const ascDist = Math.abs(normalizeLon(city.lon - ascLon));
+                        if (ascDist < 5 && ascDist < minDistance) {
+                            minDistance = ascDist;
+                            nearestLine = planet + '_asc';
+                        }
+                    }
+                    
+                    // DSC Line - curved, opposite ASC
+                    const dscLon = calculateDSCLongitude(planetLon, declination, city.lat);
+                    if (dscLon !== null) {
+                        const dscDist = Math.abs(normalizeLon(city.lon - dscLon));
+                        if (dscDist < 5 && dscDist < minDistance) {
+                            minDistance = dscDist;
+                            nearestLine = planet + '_dsc';
+                        }
+                    }
+                    
+                    if (nearestLine) {
                         const existingCity = citiesOnLines.find(c => c.name === city.name);
                         if (existingCity) {
-                            if (!existingCity.planets.includes(planet)) {
-                                existingCity.planets.push(planet);
+                            if (!existingCity.lines.includes(nearestLine)) {
+                                existingCity.lines.push(nearestLine);
                             }
                         } else {
                             citiesOnLines.push({
@@ -869,16 +1310,29 @@
                                 country: city.country,
                                 lat: city.lat,
                                 lon: city.lon,
-                                planets: [planet]
+                                lines: [nearestLine]
                             });
                         }
                     }
                 });
             });
             
-            citiesOnLines.sort((a, b) => b.planets.length - a.planets.length);
+            // Sort by number of lines (most to least)
+            citiesOnLines.sort((a, b) => b.lines.length - a.lines.length);
             
             return citiesOnLines.slice(0, 8);
+        }
+        
+        function calculateAstrocartographyLines(planet, planetLon, birthLat, birthLon) {
+            // This function is still used for reference but actual drawing uses curved calculations
+            const declination = getPlanetDeclination(planet);
+            
+            return {
+                mc: planetLon,
+                ic: (planetLon + 180) % 360,
+                asc: calculateASCLongitude(planetLon, declination, 0), // At equator for reference
+                dsc: calculateDSCLongitude(planetLon, declination, 0)
+            };
         }
         
         function normalizeLon(lon) {
@@ -898,199 +1352,1146 @@
             function lon2x(lon) { return (lon + 180) * scaleX; }
             function lat2y(lat) { return (90 - lat) * scaleY; }
             
-            // North America
+            // North America - more accurate shape
             ctx.beginPath();
-            ctx.moveTo(lon2x(-170), lat2y(65));
-            ctx.lineTo(lon2x(-160), lat2y(70));
-            ctx.lineTo(lon2x(-140), lat2y(70));
-            ctx.lineTo(lon2x(-130), lat2y(60));
-            ctx.lineTo(lon2x(-125), lat2y(50));
-            ctx.lineTo(lon2x(-123), lat2y(48));
-            ctx.lineTo(lon2x(-80), lat2y(45));
-            ctx.lineTo(lon2x(-70), lat2y(45));
+            // Alaska
+            ctx.moveTo(lon2x(-165), lat2y(65));
+            ctx.lineTo(lon2x(-163), lat2y(68));
+            ctx.lineTo(lon2x(-156), lat2y(71));
+            ctx.lineTo(lon2x(-145), lat2y(70));
+            ctx.lineTo(lon2x(-141), lat2y(69));
+            // Canada north
+            ctx.lineTo(lon2x(-135), lat2y(69));
+            ctx.lineTo(lon2x(-130), lat2y(70));
+            ctx.lineTo(lon2x(-125), lat2y(69));
+            ctx.lineTo(lon2x(-120), lat2y(70));
+            ctx.lineTo(lon2x(-110), lat2y(70));
+            ctx.lineTo(lon2x(-100), lat2y(70));
+            ctx.lineTo(lon2x(-95), lat2y(69));
+            ctx.lineTo(lon2x(-85), lat2y(68));
+            ctx.lineTo(lon2x(-80), lat2y(67));
+            ctx.lineTo(lon2x(-75), lat2y(65));
+            ctx.lineTo(lon2x(-70), lat2y(62));
+            ctx.lineTo(lon2x(-65), lat2y(60));
+            // Eastern Canada
+            ctx.lineTo(lon2x(-60), lat2y(58));
+            ctx.lineTo(lon2x(-57), lat2y(55));
+            ctx.lineTo(lon2x(-60), lat2y(52));
+            ctx.lineTo(lon2x(-64), lat2y(48));
+            ctx.lineTo(lon2x(-67), lat2y(45));
+            // East Coast US
+            ctx.lineTo(lon2x(-70), lat2y(43));
+            ctx.lineTo(lon2x(-74), lat2y(40));
+            ctx.lineTo(lon2x(-75), lat2y(37));
+            ctx.lineTo(lon2x(-76), lat2y(34));
+            ctx.lineTo(lon2x(-80), lat2y(32));
+            ctx.lineTo(lon2x(-81), lat2y(28));
+            // Florida
             ctx.lineTo(lon2x(-80), lat2y(25));
+            ctx.lineTo(lon2x(-82), lat2y(27));
+            // Gulf Coast
+            ctx.lineTo(lon2x(-85), lat2y(30));
+            ctx.lineTo(lon2x(-88), lat2y(30));
+            ctx.lineTo(lon2x(-90), lat2y(29));
+            ctx.lineTo(lon2x(-94), lat2y(29));
             ctx.lineTo(lon2x(-97), lat2y(26));
-            ctx.lineTo(lon2x(-115), lat2y(32));
-            ctx.lineTo(lon2x(-90), lat2y(16));
-            ctx.lineTo(lon2x(-85), lat2y(15));
-            ctx.lineTo(lon2x(-100), lat2y(30));
+            // Mexico
+            ctx.lineTo(lon2x(-99), lat2y(25));
+            ctx.lineTo(lon2x(-102), lat2y(22));
+            ctx.lineTo(lon2x(-105), lat2y(20));
+            ctx.lineTo(lon2x(-108), lat2y(18));
+            ctx.lineTo(lon2x(-110), lat2y(16));
+            ctx.lineTo(lon2x(-112), lat2y(14));
+            ctx.lineTo(lon2x(-109), lat2y(12));
+            ctx.lineTo(lon2x(-106), lat2y(12));
+            ctx.lineTo(lon2x(-103), lat2y(14));
+            ctx.lineTo(lon2x(-100), lat2y(16));
+            ctx.lineTo(lon2x(-97), lat2y(18));
+            ctx.lineTo(lon2x(-94), lat2y(16));
+            ctx.lineTo(lon2x(-92), lat2y(14));
+            ctx.lineTo(lon2x(-90), lat2y(14));
+            // Central America
+            ctx.lineTo(lon2x(-88), lat2y(14));
+            ctx.lineTo(lon2x(-86), lat2y(12));
+            ctx.lineTo(lon2x(-84), lat2y(10));
+            ctx.lineTo(lon2x(-82), lat2y(9));
+            ctx.lineTo(lon2x(-80), lat2y(8));
+            ctx.lineTo(lon2x(-78), lat2y(8));
+            ctx.lineTo(lon2x(-77), lat2y(9));
+            ctx.lineTo(lon2x(-79), lat2y(10));
+            ctx.lineTo(lon2x(-81), lat2y(11));
+            ctx.lineTo(lon2x(-83), lat2y(13));
+            ctx.lineTo(lon2x(-87), lat2y(16));
+            // West Coast Mexico
+            ctx.lineTo(lon2x(-95), lat2y(19));
+            ctx.lineTo(lon2x(-100), lat2y(22));
+            ctx.lineTo(lon2x(-105), lat2y(24));
+            ctx.lineTo(lon2x(-110), lat2y(27));
+            ctx.lineTo(lon2x(-112), lat2y(28));
+            ctx.lineTo(lon2x(-114), lat2y(29));
+            ctx.lineTo(lon2x(-115), lat2y(31));
+            // West Coast US
+            ctx.lineTo(lon2x(-117), lat2y(32));
+            ctx.lineTo(lon2x(-118), lat2y(34));
+            ctx.lineTo(lon2x(-120), lat2y(36));
+            ctx.lineTo(lon2x(-122), lat2y(38));
+            ctx.lineTo(lon2x(-123), lat2y(42));
+            ctx.lineTo(lon2x(-124), lat2y(46));
+            ctx.lineTo(lon2x(-123), lat2y(48));
+            // West Coast Canada
             ctx.lineTo(lon2x(-125), lat2y(50));
+            ctx.lineTo(lon2x(-128), lat2y(52));
+            ctx.lineTo(lon2x(-130), lat2y(54));
+            ctx.lineTo(lon2x(-133), lat2y(56));
+            ctx.lineTo(lon2x(-135), lat2y(58));
+            ctx.lineTo(lon2x(-138), lat2y(59));
+            // Back to Alaska
+            ctx.lineTo(lon2x(-141), lat2y(60));
+            ctx.lineTo(lon2x(-145), lat2y(61));
             ctx.lineTo(lon2x(-150), lat2y(62));
+            ctx.lineTo(lon2x(-155), lat2y(63));
+            ctx.lineTo(lon2x(-160), lat2y(64));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // South America
+            // Greenland
             ctx.beginPath();
-            ctx.moveTo(lon2x(-80), lat2y(12));
-            ctx.lineTo(lon2x(-75), lat2y(0));
-            ctx.lineTo(lon2x(-70), lat2y(-10));
-            ctx.lineTo(lon2x(-60), lat2y(-30));
-            ctx.lineTo(lon2x(-55), lat2y(-35));
-            ctx.lineTo(lon2x(-50), lat2y(-20));
+            ctx.moveTo(lon2x(-73), lat2y(83));
+            ctx.lineTo(lon2x(-70), lat2y(83));
+            ctx.lineTo(lon2x(-65), lat2y(82));
+            ctx.lineTo(lon2x(-60), lat2y(81));
+            ctx.lineTo(lon2x(-55), lat2y(80));
+            ctx.lineTo(lon2x(-50), lat2y(78));
+            ctx.lineTo(lon2x(-45), lat2y(76));
+            ctx.lineTo(lon2x(-42), lat2y(73));
+            ctx.lineTo(lon2x(-40), lat2y(70));
+            ctx.lineTo(lon2x(-42), lat2y(68));
+            ctx.lineTo(lon2x(-45), lat2y(66));
+            ctx.lineTo(lon2x(-48), lat2y(64));
+            ctx.lineTo(lon2x(-50), lat2y(62));
+            ctx.lineTo(lon2x(-52), lat2y(60));
+            ctx.lineTo(lon2x(-54), lat2y(62));
+            ctx.lineTo(lon2x(-56), lat2y(64));
+            ctx.lineTo(lon2x(-58), lat2y(66));
+            ctx.lineTo(lon2x(-62), lat2y(68));
+            ctx.lineTo(lon2x(-66), lat2y(70));
+            ctx.lineTo(lon2x(-70), lat2y(72));
+            ctx.lineTo(lon2x(-73), lat2y(75));
+            ctx.lineTo(lon2x(-75), lat2y(78));
+            ctx.lineTo(lon2x(-74), lat2y(81));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Caribbean Islands
+            ctx.beginPath();
+            // Cuba
+            ctx.moveTo(lon2x(-84), lat2y(23));
+            ctx.lineTo(lon2x(-82), lat2y(23));
+            ctx.lineTo(lon2x(-80), lat2y(22));
+            ctx.lineTo(lon2x(-78), lat2y(21));
+            ctx.lineTo(lon2x(-76), lat2y(20));
+            ctx.lineTo(lon2x(-75), lat2y(20));
+            ctx.lineTo(lon2x(-76), lat2y(21));
+            ctx.lineTo(lon2x(-78), lat2y(22));
+            ctx.lineTo(lon2x(-82), lat2y(23));
+            ctx.lineTo(lon2x(-84), lat2y(22));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Jamaica
+            ctx.beginPath();
+            ctx.arc(lon2x(-77.5), lat2y(18.2), 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hispaniola
+            ctx.beginPath();
+            ctx.moveTo(lon2x(-74), lat2y(20));
+            ctx.lineTo(lon2x(-72), lat2y(20));
+            ctx.lineTo(lon2x(-71), lat2y(19));
+            ctx.lineTo(lon2x(-68), lat2y(19));
+            ctx.lineTo(lon2x(-68), lat2y(18));
+            ctx.lineTo(lon2x(-71), lat2y(18));
+            ctx.lineTo(lon2x(-72), lat2y(19));
+            ctx.lineTo(lon2x(-74), lat2y(19));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // South America - more detailed
+            ctx.beginPath();
+            // Colombia/Venezuela
+            ctx.moveTo(lon2x(-77), lat2y(12));
+            ctx.lineTo(lon2x(-75), lat2y(11));
+            ctx.lineTo(lon2x(-72), lat2y(11));
+            ctx.lineTo(lon2x(-70), lat2y(12));
+            ctx.lineTo(lon2x(-68), lat2y(11));
+            ctx.lineTo(lon2x(-66), lat2y(10));
+            ctx.lineTo(lon2x(-64), lat2y(10));
+            ctx.lineTo(lon2x(-62), lat2y(9));
+            ctx.lineTo(lon2x(-60), lat2y(7));
+            // Guianas/Brazil north
+            ctx.lineTo(lon2x(-58), lat2y(5));
+            ctx.lineTo(lon2x(-56), lat2y(3));
+            ctx.lineTo(lon2x(-54), lat2y(2));
+            ctx.lineTo(lon2x(-52), lat2y(2));
+            ctx.lineTo(lon2x(-50), lat2y(1));
+            ctx.lineTo(lon2x(-48), lat2y(0));
+            ctx.lineTo(lon2x(-46), lat2y(-1));
+            ctx.lineTo(lon2x(-44), lat2y(-2));
+            // Brazil east coast
+            ctx.lineTo(lon2x(-42), lat2y(-3));
             ctx.lineTo(lon2x(-40), lat2y(-5));
-            ctx.lineTo(lon2x(-35), lat2y(0));
-            ctx.lineTo(lon2x(-50), lat2y(5));
-            ctx.lineTo(lon2x(-70), lat2y(10));
+            ctx.lineTo(lon2x(-38), lat2y(-8));
+            ctx.lineTo(lon2x(-36), lat2y(-10));
+            ctx.lineTo(lon2x(-35), lat2y(-12));
+            ctx.lineTo(lon2x(-35), lat2y(-15));
+            ctx.lineTo(lon2x(-36), lat2y(-18));
+            ctx.lineTo(lon2x(-38), lat2y(-20));
+            ctx.lineTo(lon2x(-40), lat2y(-22));
+            ctx.lineTo(lon2x(-42), lat2y(-23));
+            ctx.lineTo(lon2x(-44), lat2y(-24));
+            // Southern Brazil
+            ctx.lineTo(lon2x(-46), lat2y(-24));
+            ctx.lineTo(lon2x(-48), lat2y(-26));
+            ctx.lineTo(lon2x(-50), lat2y(-28));
+            ctx.lineTo(lon2x(-52), lat2y(-30));
+            ctx.lineTo(lon2x(-54), lat2y(-32));
+            // Uruguay/Argentina
+            ctx.lineTo(lon2x(-56), lat2y(-34));
+            ctx.lineTo(lon2x(-58), lat2y(-35));
+            ctx.lineTo(lon2x(-60), lat2y(-36));
+            ctx.lineTo(lon2x(-62), lat2y(-38));
+            ctx.lineTo(lon2x(-64), lat2y(-40));
+            ctx.lineTo(lon2x(-65), lat2y(-42));
+            ctx.lineTo(lon2x(-66), lat2y(-44));
+            ctx.lineTo(lon2x(-68), lat2y(-47));
+            ctx.lineTo(lon2x(-70), lat2y(-50));
+            ctx.lineTo(lon2x(-72), lat2y(-52));
+            // Southern tip
+            ctx.lineTo(lon2x(-71), lat2y(-54));
+            ctx.lineTo(lon2x(-69), lat2y(-55));
+            ctx.lineTo(lon2x(-67), lat2y(-54));
+            // Chile west coast
+            ctx.lineTo(lon2x(-70), lat2y(-52));
+            ctx.lineTo(lon2x(-72), lat2y(-48));
+            ctx.lineTo(lon2x(-73), lat2y(-44));
+            ctx.lineTo(lon2x(-73), lat2y(-40));
+            ctx.lineTo(lon2x(-72), lat2y(-36));
+            ctx.lineTo(lon2x(-71), lat2y(-32));
+            ctx.lineTo(lon2x(-71), lat2y(-28));
+            ctx.lineTo(lon2x(-70), lat2y(-24));
+            ctx.lineTo(lon2x(-70), lat2y(-20));
+            // Peru
+            ctx.lineTo(lon2x(-71), lat2y(-16));
+            ctx.lineTo(lon2x(-72), lat2y(-12));
+            ctx.lineTo(lon2x(-74), lat2y(-8));
+            ctx.lineTo(lon2x(-76), lat2y(-4));
+            ctx.lineTo(lon2x(-78), lat2y(-1));
+            // Ecuador
+            ctx.lineTo(lon2x(-79), lat2y(1));
+            ctx.lineTo(lon2x(-80), lat2y(3));
+            ctx.lineTo(lon2x(-80), lat2y(5));
+            ctx.lineTo(lon2x(-79), lat2y(7));
+            ctx.lineTo(lon2x(-78), lat2y(9));
+            ctx.lineTo(lon2x(-77), lat2y(11));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Europe
+            // EURASIA (Europe, Middle East, and Asia connected as one landmass)
             ctx.beginPath();
-            ctx.moveTo(lon2x(-10), lat2y(60));
-            ctx.lineTo(lon2x(0), lat2y(58));
-            ctx.lineTo(lon2x(10), lat2y(55));
-            ctx.lineTo(lon2x(20), lat2y(55));
-            ctx.lineTo(lon2x(30), lat2y(60));
-            ctx.lineTo(lon2x(30), lat2y(70));
-            ctx.lineTo(lon2x(10), lat2y(63));
+            // Iceland
+            ctx.moveTo(lon2x(-24), lat2y(66));
+            ctx.lineTo(lon2x(-22), lat2y(66));
+            ctx.lineTo(lon2x(-20), lat2y(65));
+            ctx.lineTo(lon2x(-18), lat2y(65));
+            ctx.lineTo(lon2x(-16), lat2y(64));
+            ctx.lineTo(lon2x(-14), lat2y(65));
+            ctx.lineTo(lon2x(-16), lat2y(66));
+            ctx.lineTo(lon2x(-18), lat2y(66));
+            ctx.lineTo(lon2x(-22), lat2y(67));
+            ctx.lineTo(lon2x(-24), lat2y(67));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Africa
+            // British Isles
             ctx.beginPath();
-            ctx.moveTo(lon2x(-10), lat2y(35));
-            ctx.lineTo(lon2x(10), lat2y(37));
-            ctx.lineTo(lon2x(30), lat2y(32));
-            ctx.lineTo(lon2x(40), lat2y(20));
-            ctx.lineTo(lon2x(50), lat2y(0));
-            ctx.lineTo(lon2x(50), lat2y(-20));
-            ctx.lineTo(lon2x(35), lat2y(-35));
-            ctx.lineTo(lon2x(20), lat2y(-33));
-            ctx.lineTo(lon2x(10), lat2y(0));
-            ctx.lineTo(lon2x(0), lat2y(10));
+            // Ireland
+            ctx.moveTo(lon2x(-10), lat2y(55));
+            ctx.lineTo(lon2x(-9), lat2y(55));
+            ctx.lineTo(lon2x(-8), lat2y(54));
+            ctx.lineTo(lon2x(-6), lat2y(53));
+            ctx.lineTo(lon2x(-6), lat2y(52));
+            ctx.lineTo(lon2x(-7), lat2y(51));
+            ctx.lineTo(lon2x(-9), lat2y(52));
+            ctx.lineTo(lon2x(-10), lat2y(53));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Asia
+            // Great Britain
             ctx.beginPath();
-            ctx.moveTo(lon2x(35), lat2y(70));
-            ctx.lineTo(lon2x(60), lat2y(72));
+            ctx.moveTo(lon2x(-5), lat2y(59));
+            ctx.lineTo(lon2x(-4), lat2y(59));
+            ctx.lineTo(lon2x(-3), lat2y(58));
+            ctx.lineTo(lon2x(-2), lat2y(57));
+            ctx.lineTo(lon2x(-1), lat2y(56));
+            ctx.lineTo(lon2x(0), lat2y(55));
+            ctx.lineTo(lon2x(1), lat2y(54));
+            ctx.lineTo(lon2x(1), lat2y(53));
+            ctx.lineTo(lon2x(1), lat2y(52));
+            ctx.lineTo(lon2x(0), lat2y(51));
+            ctx.lineTo(lon2x(-1), lat2y(50));
+            ctx.lineTo(lon2x(-2), lat2y(51));
+            ctx.lineTo(lon2x(-3), lat2y(52));
+            ctx.lineTo(lon2x(-4), lat2y(53));
+            ctx.lineTo(lon2x(-5), lat2y(55));
+            ctx.lineTo(lon2x(-5), lat2y(57));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Main Eurasia landmass
+            ctx.beginPath();
+            // Scandinavia
+            ctx.moveTo(lon2x(5), lat2y(60));
+            ctx.lineTo(lon2x(8), lat2y(63));
+            ctx.lineTo(lon2x(12), lat2y(65));
+            ctx.lineTo(lon2x(16), lat2y(67));
+            ctx.lineTo(lon2x(20), lat2y(69));
+            ctx.lineTo(lon2x(24), lat2y(70));
+            ctx.lineTo(lon2x(28), lat2y(70));
+            ctx.lineTo(lon2x(30), lat2y(69));
+            ctx.lineTo(lon2x(31), lat2y(67));
+            ctx.lineTo(lon2x(30), lat2y(65));
+            ctx.lineTo(lon2x(28), lat2y(63));
+            ctx.lineTo(lon2x(26), lat2y(61));
+            ctx.lineTo(lon2x(24), lat2y(60));
+            ctx.lineTo(lon2x(22), lat2y(59));
+            // Russia/Eastern Europe
+            ctx.lineTo(lon2x(24), lat2y(57));
+            ctx.lineTo(lon2x(26), lat2y(55));
+            ctx.lineTo(lon2x(28), lat2y(53));
+            ctx.lineTo(lon2x(30), lat2y(51));
+            ctx.lineTo(lon2x(32), lat2y(49));
+            ctx.lineTo(lon2x(34), lat2y(47));
+            ctx.lineTo(lon2x(36), lat2y(46));
+            ctx.lineTo(lon2x(38), lat2y(45));
+            ctx.lineTo(lon2x(40), lat2y(44));
+            // Continuing through Russia to Siberia
+            ctx.lineTo(lon2x(50), lat2y(45));
+            ctx.lineTo(lon2x(60), lat2y(50));
+            ctx.lineTo(lon2x(70), lat2y(55));
+            ctx.lineTo(lon2x(80), lat2y(60));
+            ctx.lineTo(lon2x(90), lat2y(65));
             ctx.lineTo(lon2x(100), lat2y(70));
-            ctx.lineTo(lon2x(140), lat2y(62));
-            ctx.lineTo(lon2x(145), lat2y(55));
-            ctx.lineTo(lon2x(150), lat2y(45));
-            ctx.lineTo(lon2x(135), lat2y(20));
-            ctx.lineTo(lon2x(100), lat2y(20));
-            ctx.lineTo(lon2x(70), lat2y(30));
-            ctx.lineTo(lon2x(50), lat2y(40));
+            ctx.lineTo(lon2x(110), lat2y(72));
+            ctx.lineTo(lon2x(120), lat2y(73));
+            ctx.lineTo(lon2x(130), lat2y(72));
+            ctx.lineTo(lon2x(140), lat2y(70));
+            ctx.lineTo(lon2x(150), lat2y(68));
+            ctx.lineTo(lon2x(160), lat2y(66));
+            ctx.lineTo(lon2x(165), lat2y(64));
+            ctx.lineTo(lon2x(168), lat2y(62));
+            ctx.lineTo(lon2x(170), lat2y(60));
+            // Far East Russia
+            ctx.lineTo(lon2x(169), lat2y(58));
+            ctx.lineTo(lon2x(168), lat2y(56));
+            ctx.lineTo(lon2x(166), lat2y(54));
+            ctx.lineTo(lon2x(164), lat2y(52));
+            ctx.lineTo(lon2x(162), lat2y(50));
+            ctx.lineTo(lon2x(160), lat2y(48));
+            ctx.lineTo(lon2x(158), lat2y(46));
+            ctx.lineTo(lon2x(156), lat2y(45));
+            ctx.lineTo(lon2x(154), lat2y(44));
+            // Korea/China Northeast
+            ctx.lineTo(lon2x(150), lat2y(43));
+            ctx.lineTo(lon2x(146), lat2y(42));
+            ctx.lineTo(lon2x(142), lat2y(42));
+            ctx.lineTo(lon2x(138), lat2y(42));
+            ctx.lineTo(lon2x(134), lat2y(43));
+            ctx.lineTo(lon2x(130), lat2y(44));
+            ctx.lineTo(lon2x(128), lat2y(45));
+            // China East Coast
+            ctx.lineTo(lon2x(126), lat2y(44));
+            ctx.lineTo(lon2x(124), lat2y(43));
+            ctx.lineTo(lon2x(122), lat2y(42));
+            ctx.lineTo(lon2x(121), lat2y(40));
+            ctx.lineTo(lon2x(120), lat2y(38));
+            ctx.lineTo(lon2x(120), lat2y(35));
+            ctx.lineTo(lon2x(121), lat2y(32));
+            ctx.lineTo(lon2x(121), lat2y(28));
+            ctx.lineTo(lon2x(120), lat2y(25));
+            ctx.lineTo(lon2x(118), lat2y(23));
+            ctx.lineTo(lon2x(116), lat2y(22));
+            ctx.lineTo(lon2x(114), lat2y(21));
+            ctx.lineTo(lon2x(112), lat2y(21));
+            ctx.lineTo(lon2x(110), lat2y(20));
+            // Southeast Asia
+            ctx.lineTo(lon2x(108), lat2y(19));
+            ctx.lineTo(lon2x(106), lat2y(17));
+            ctx.lineTo(lon2x(104), lat2y(15));
+            ctx.lineTo(lon2x(102), lat2y(13));
+            ctx.lineTo(lon2x(100), lat2y(11));
+            ctx.lineTo(lon2x(99), lat2y(9));
+            ctx.lineTo(lon2x(98), lat2y(7));
+            ctx.lineTo(lon2x(98), lat2y(5));
+            // Malay Peninsula
+            ctx.lineTo(lon2x(100), lat2y(4));
+            ctx.lineTo(lon2x(101), lat2y(2));
+            ctx.lineTo(lon2x(102), lat2y(1));
+            ctx.lineTo(lon2x(103), lat2y(1));
+            ctx.lineTo(lon2x(103), lat2y(2));
+            ctx.lineTo(lon2x(102), lat2y(4));
+            ctx.lineTo(lon2x(101), lat2y(6));
+            ctx.lineTo(lon2x(100), lat2y(8));
+            // Back through India/Myanmar
+            ctx.lineTo(lon2x(98), lat2y(10));
+            ctx.lineTo(lon2x(96), lat2y(12));
+            ctx.lineTo(lon2x(94), lat2y(15));
+            ctx.lineTo(lon2x(92), lat2y(18));
+            ctx.lineTo(lon2x(90), lat2y(21));
+            ctx.lineTo(lon2x(88), lat2y(23));
+            ctx.lineTo(lon2x(86), lat2y(25));
+            ctx.lineTo(lon2x(84), lat2y(27));
+            ctx.lineTo(lon2x(82), lat2y(28));
+            ctx.lineTo(lon2x(80), lat2y(29));
+            ctx.lineTo(lon2x(78), lat2y(30));
+            ctx.lineTo(lon2x(76), lat2y(31));
+            ctx.lineTo(lon2x(74), lat2y(32));
+            ctx.lineTo(lon2x(72), lat2y(33));
+            ctx.lineTo(lon2x(70), lat2y(34));
+            // India west coast
+            ctx.lineTo(lon2x(69), lat2y(32));
+            ctx.lineTo(lon2x(68), lat2y(30));
+            ctx.lineTo(lon2x(68), lat2y(27));
+            ctx.lineTo(lon2x(68), lat2y(24));
+            ctx.lineTo(lon2x(69), lat2y(22));
+            ctx.lineTo(lon2x(70), lat2y(20));
+            ctx.lineTo(lon2x(72), lat2y(19));
+            ctx.lineTo(lon2x(74), lat2y(18));
+            ctx.lineTo(lon2x(76), lat2y(16));
+            ctx.lineTo(lon2x(77), lat2y(13));
+            ctx.lineTo(lon2x(77), lat2y(10));
+            ctx.lineTo(lon2x(76), lat2y(8));
+            ctx.lineTo(lon2x(74), lat2y(9));
+            ctx.lineTo(lon2x(72), lat2y(10));
+            ctx.lineTo(lon2x(70), lat2y(12));
+            ctx.lineTo(lon2x(68), lat2y(14));
+            // Pakistan/Iran/Middle East
+            ctx.lineTo(lon2x(66), lat2y(16));
+            ctx.lineTo(lon2x(64), lat2y(18));
+            ctx.lineTo(lon2x(62), lat2y(20));
+            ctx.lineTo(lon2x(60), lat2y(23));
+            ctx.lineTo(lon2x(58), lat2y(26));
+            ctx.lineTo(lon2x(56), lat2y(28));
+            ctx.lineTo(lon2x(54), lat2y(30));
+            ctx.lineTo(lon2x(52), lat2y(32));
+            ctx.lineTo(lon2x(50), lat2y(34));
+            ctx.lineTo(lon2x(48), lat2y(36));
+            ctx.lineTo(lon2x(46), lat2y(38));
+            // Arabian Peninsula
+            ctx.lineTo(lon2x(44), lat2y(37));
+            ctx.lineTo(lon2x(42), lat2y(36));
+            ctx.lineTo(lon2x(40), lat2y(34));
+            ctx.lineTo(lon2x(38), lat2y(32));
+            ctx.lineTo(lon2x(37), lat2y(30));
+            ctx.lineTo(lon2x(36), lat2y(27));
+            ctx.lineTo(lon2x(36), lat2y(24));
+            ctx.lineTo(lon2x(37), lat2y(21));
+            ctx.lineTo(lon2x(39), lat2y(18));
+            ctx.lineTo(lon2x(41), lat2y(16));
+            ctx.lineTo(lon2x(43), lat2y(14));
+            ctx.lineTo(lon2x(45), lat2y(13));
+            ctx.lineTo(lon2x(48), lat2y(12));
+            ctx.lineTo(lon2x(51), lat2y(12));
+            ctx.lineTo(lon2x(53), lat2y(13));
+            ctx.lineTo(lon2x(55), lat2y(14));
+            ctx.lineTo(lon2x(56), lat2y(16));
+            ctx.lineTo(lon2x(56), lat2y(18));
+            ctx.lineTo(lon2x(55), lat2y(20));
+            ctx.lineTo(lon2x(54), lat2y(22));
+            ctx.lineTo(lon2x(52), lat2y(24));
+            ctx.lineTo(lon2x(50), lat2y(26));
+            ctx.lineTo(lon2x(48), lat2y(28));
+            // Through Iraq/Syria to Mediterranean
+            ctx.lineTo(lon2x(46), lat2y(30));
+            ctx.lineTo(lon2x(44), lat2y(32));
+            ctx.lineTo(lon2x(42), lat2y(34));
+            ctx.lineTo(lon2x(40), lat2y(36));
+            ctx.lineTo(lon2x(38), lat2y(37));
+            ctx.lineTo(lon2x(36), lat2y(38));
+            ctx.lineTo(lon2x(34), lat2y(39));
+            ctx.lineTo(lon2x(32), lat2y(40));
+            // Turkey/Black Sea
+            ctx.lineTo(lon2x(30), lat2y(41));
+            ctx.lineTo(lon2x(28), lat2y(41));
+            ctx.lineTo(lon2x(26), lat2y(40));
+            ctx.lineTo(lon2x(24), lat2y(39));
+            ctx.lineTo(lon2x(22), lat2y(38));
+            ctx.lineTo(lon2x(21), lat2y(37));
+            // Greece
+            ctx.lineTo(lon2x(20), lat2y(37));
+            ctx.lineTo(lon2x(21), lat2y(38));
+            ctx.lineTo(lon2x(22), lat2y(39));
+            ctx.lineTo(lon2x(23), lat2y(40));
+            ctx.lineTo(lon2x(24), lat2y(41));
+            ctx.lineTo(lon2x(26), lat2y(41));
+            ctx.lineTo(lon2x(27), lat2y(42));
+            ctx.lineTo(lon2x(28), lat2y(42));
+            // Balkans
+            ctx.lineTo(lon2x(26), lat2y(43));
+            ctx.lineTo(lon2x(24), lat2y(44));
+            ctx.lineTo(lon2x(22), lat2y(45));
+            ctx.lineTo(lon2x(20), lat2y(45));
+            ctx.lineTo(lon2x(18), lat2y(45));
+            ctx.lineTo(lon2x(16), lat2y(46));
+            // Italy
+            ctx.lineTo(lon2x(15), lat2y(45));
+            ctx.lineTo(lon2x(14), lat2y(44));
+            ctx.lineTo(lon2x(13), lat2y(43));
+            ctx.lineTo(lon2x(12), lat2y(42));
+            ctx.lineTo(lon2x(12), lat2y(41));
+            ctx.lineTo(lon2x(12), lat2y(40));
+            ctx.lineTo(lon2x(13), lat2y(39));
+            ctx.lineTo(lon2x(14), lat2y(38));
+            ctx.lineTo(lon2x(15), lat2y(38));
+            ctx.lineTo(lon2x(16), lat2y(39));
+            ctx.lineTo(lon2x(17), lat2y(40));
+            ctx.lineTo(lon2x(18), lat2y(41));
+            ctx.lineTo(lon2x(17), lat2y(42));
+            ctx.lineTo(lon2x(16), lat2y(43));
+            ctx.lineTo(lon2x(14), lat2y(44));
+            ctx.lineTo(lon2x(12), lat2y(45));
+            ctx.lineTo(lon2x(10), lat2y(46));
+            ctx.lineTo(lon2x(8), lat2y(46));
+            ctx.lineTo(lon2x(7), lat2y(45));
+            ctx.lineTo(lon2x(7), lat2y(44));
+            ctx.lineTo(lon2x(8), lat2y(43));
+            // Southern France
+            ctx.lineTo(lon2x(6), lat2y(43));
+            ctx.lineTo(lon2x(4), lat2y(43));
+            ctx.lineTo(lon2x(2), lat2y(42));
+            ctx.lineTo(lon2x(1), lat2y(42));
+            ctx.lineTo(lon2x(0), lat2y(41));
+            ctx.lineTo(lon2x(-1), lat2y(41));
+            // Spain/Portugal
+            ctx.lineTo(lon2x(-2), lat2y(40));
+            ctx.lineTo(lon2x(-4), lat2y(39));
+            ctx.lineTo(lon2x(-6), lat2y(38));
+            ctx.lineTo(lon2x(-8), lat2y(37));
+            ctx.lineTo(lon2x(-9), lat2y(37));
+            ctx.lineTo(lon2x(-9), lat2y(38));
+            ctx.lineTo(lon2x(-9), lat2y(40));
+            ctx.lineTo(lon2x(-8), lat2y(42));
+            ctx.lineTo(lon2x(-7), lat2y(43));
+            ctx.lineTo(lon2x(-5), lat2y(44));
+            // France west coast
+            ctx.lineTo(lon2x(-4), lat2y(45));
+            ctx.lineTo(lon2x(-3), lat2y(46));
+            ctx.lineTo(lon2x(-2), lat2y(47));
+            ctx.lineTo(lon2x(-1), lat2y(48));
+            ctx.lineTo(lon2x(0), lat2y(49));
+            ctx.lineTo(lon2x(1), lat2y(50));
+            ctx.lineTo(lon2x(2), lat2y(51));
+            ctx.lineTo(lon2x(3), lat2y(51));
+            // North Europe
+            ctx.lineTo(lon2x(4), lat2y(52));
+            ctx.lineTo(lon2x(5), lat2y(53));
+            ctx.lineTo(lon2x(6), lat2y(54));
+            ctx.lineTo(lon2x(7), lat2y(55));
+            ctx.lineTo(lon2x(8), lat2y(56));
+            ctx.lineTo(lon2x(8), lat2y(57));
+            ctx.lineTo(lon2x(7), lat2y(58));
+            ctx.lineTo(lon2x(6), lat2y(59));
+            ctx.lineTo(lon2x(5), lat2y(60));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Australia
+            // Japan
             ctx.beginPath();
-            ctx.moveTo(lon2x(115), lat2y(-15));
-            ctx.lineTo(lon2x(130), lat2y(-12));
-            ctx.lineTo(lon2x(145), lat2y(-15));
-            ctx.lineTo(lon2x(150), lat2y(-35));
-            ctx.lineTo(lon2x(130), lat2y(-35));
-            ctx.lineTo(lon2x(115), lat2y(-32));
+            // Hokkaido
+            ctx.moveTo(lon2x(141), lat2y(45));
+            ctx.lineTo(lon2x(142), lat2y(45));
+            ctx.lineTo(lon2x(143), lat2y(44));
+            ctx.lineTo(lon2x(145), lat2y(44));
+            ctx.lineTo(lon2x(146), lat2y(43));
+            ctx.lineTo(lon2x(145), lat2y(42));
+            ctx.lineTo(lon2x(143), lat2y(42));
+            ctx.lineTo(lon2x(141), lat2y(43));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Honshu
+            ctx.beginPath();
+            ctx.moveTo(lon2x(139), lat2y(41));
+            ctx.lineTo(lon2x(140), lat2y(41));
+            ctx.lineTo(lon2x(141), lat2y(40));
+            ctx.lineTo(lon2x(141), lat2y(38));
+            ctx.lineTo(lon2x(140), lat2y(36));
+            ctx.lineTo(lon2x(139), lat2y(35));
+            ctx.lineTo(lon2x(138), lat2y(34));
+            ctx.lineTo(lon2x(137), lat2y(35));
+            ctx.lineTo(lon2x(137), lat2y(36));
+            ctx.lineTo(lon2x(138), lat2y(38));
+            ctx.lineTo(lon2x(138), lat2y(40));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Kyushu
+            ctx.beginPath();
+            ctx.moveTo(lon2x(130), lat2y(34));
+            ctx.lineTo(lon2x(131), lat2y(34));
+            ctx.lineTo(lon2x(132), lat2y(33));
+            ctx.lineTo(lon2x(131), lat2y(32));
+            ctx.lineTo(lon2x(130), lat2y(31));
+            ctx.lineTo(lon2x(129), lat2y(32));
+            ctx.lineTo(lon2x(129), lat2y(33));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Philippines
+            ctx.beginPath();
+            // Luzon
+            ctx.moveTo(lon2x(120), lat2y(19));
+            ctx.lineTo(lon2x(121), lat2y(19));
+            ctx.lineTo(lon2x(122), lat2y(18));
+            ctx.lineTo(lon2x(122), lat2y(16));
+            ctx.lineTo(lon2x(121), lat2y(15));
+            ctx.lineTo(lon2x(120), lat2y(15));
+            ctx.lineTo(lon2x(120), lat2y(17));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Mindanao
+            ctx.beginPath();
+            ctx.moveTo(lon2x(124), lat2y(9));
+            ctx.lineTo(lon2x(126), lat2y(9));
+            ctx.lineTo(lon2x(126), lat2y(7));
+            ctx.lineTo(lon2x(125), lat2y(6));
+            ctx.lineTo(lon2x(124), lat2y(6));
+            ctx.lineTo(lon2x(124), lat2y(8));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Indonesia
+            ctx.beginPath();
+            // Sumatra
+            ctx.moveTo(lon2x(95), lat2y(6));
+            ctx.lineTo(lon2x(97), lat2y(6));
+            ctx.lineTo(lon2x(100), lat2y(4));
+            ctx.lineTo(lon2x(101), lat2y(2));
+            ctx.lineTo(lon2x(101), lat2y(0));
+            ctx.lineTo(lon2x(100), lat2y(-2));
+            ctx.lineTo(lon2x(98), lat2y(-4));
+            ctx.lineTo(lon2x(96), lat2y(-4));
+            ctx.lineTo(lon2x(95), lat2y(-2));
+            ctx.lineTo(lon2x(95), lat2y(0));
+            ctx.lineTo(lon2x(95), lat2y(3));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Java
+            ctx.beginPath();
+            ctx.moveTo(lon2x(106), lat2y(-6));
+            ctx.lineTo(lon2x(108), lat2y(-6));
+            ctx.lineTo(lon2x(111), lat2y(-7));
+            ctx.lineTo(lon2x(114), lat2y(-8));
+            ctx.lineTo(lon2x(114), lat2y(-8.5));
+            ctx.lineTo(lon2x(111), lat2y(-8.5));
+            ctx.lineTo(lon2x(108), lat2y(-7.5));
+            ctx.lineTo(lon2x(106), lat2y(-7));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Borneo
+            ctx.beginPath();
+            ctx.moveTo(lon2x(109), lat2y(7));
+            ctx.lineTo(lon2x(112), lat2y(7));
+            ctx.lineTo(lon2x(115), lat2y(5));
+            ctx.lineTo(lon2x(118), lat2y(3));
+            ctx.lineTo(lon2x(119), lat2y(0));
+            ctx.lineTo(lon2x(119), lat2y(-3));
+            ctx.lineTo(lon2x(117), lat2y(-4));
+            ctx.lineTo(lon2x(115), lat2y(-4));
+            ctx.lineTo(lon2x(112), lat2y(-3));
+            ctx.lineTo(lon2x(110), lat2y(-1));
+            ctx.lineTo(lon2x(109), lat2y(2));
+            ctx.lineTo(lon2x(109), lat2y(5));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Africa - more accurate
+            ctx.beginPath();
+            // North Africa
+            ctx.moveTo(lon2x(-17), lat2y(28));
+            ctx.lineTo(lon2x(-15), lat2y(30));
+            ctx.lineTo(lon2x(-13), lat2y(32));
+            ctx.lineTo(lon2x(-10), lat2y(34));
+            ctx.lineTo(lon2x(-6), lat2y(36));
+            ctx.lineTo(lon2x(-2), lat2y(37));
+            ctx.lineTo(lon2x(3), lat2y(37));
+            ctx.lineTo(lon2x(8), lat2y(37));
+            ctx.lineTo(lon2x(12), lat2y(36));
+            ctx.lineTo(lon2x(16), lat2y(34));
+            ctx.lineTo(lon2x(20), lat2y(33));
+            ctx.lineTo(lon2x(24), lat2y(32));
+            ctx.lineTo(lon2x(28), lat2y(32));
+            ctx.lineTo(lon2x(32), lat2y(31));
+            ctx.lineTo(lon2x(36), lat2y(30));
+            // Red Sea - connecting to Eurasia through Sinai
+            ctx.lineTo(lon2x(36), lat2y(29));
+            ctx.lineTo(lon2x(34), lat2y(29));
+            ctx.lineTo(lon2x(34), lat2y(31));
+            ctx.lineTo(lon2x(35), lat2y(32));
+            // Back down Red Sea
+            ctx.lineTo(lon2x(38), lat2y(28));
+            ctx.lineTo(lon2x(40), lat2y(26));
+            ctx.lineTo(lon2x(42), lat2y(24));
+            ctx.lineTo(lon2x(43), lat2y(22));
+            ctx.lineTo(lon2x(44), lat2y(20));
+            ctx.lineTo(lon2x(46), lat2y(18));
+            ctx.lineTo(lon2x(48), lat2y(16));
+            ctx.lineTo(lon2x(50), lat2y(14));
+            // East Africa
+            ctx.lineTo(lon2x(51), lat2y(12));
+            ctx.lineTo(lon2x(51), lat2y(8));
+            ctx.lineTo(lon2x(51), lat2y(4));
+            ctx.lineTo(lon2x(51), lat2y(0));
+            ctx.lineTo(lon2x(50), lat2y(-4));
+            ctx.lineTo(lon2x(48), lat2y(-8));
+            ctx.lineTo(lon2x(46), lat2y(-12));
+            ctx.lineTo(lon2x(44), lat2y(-16));
+            ctx.lineTo(lon2x(42), lat2y(-20));
+            ctx.lineTo(lon2x(40), lat2y(-24));
+            ctx.lineTo(lon2x(38), lat2y(-26));
+            ctx.lineTo(lon2x(36), lat2y(-28));
+            ctx.lineTo(lon2x(34), lat2y(-30));
+            ctx.lineTo(lon2x(32), lat2y(-32));
+            // South Africa
+            ctx.lineTo(lon2x(30), lat2y(-33));
+            ctx.lineTo(lon2x(28), lat2y(-34));
+            ctx.lineTo(lon2x(26), lat2y(-34));
+            ctx.lineTo(lon2x(24), lat2y(-34));
+            ctx.lineTo(lon2x(22), lat2y(-34));
+            ctx.lineTo(lon2x(20), lat2y(-33));
+            ctx.lineTo(lon2x(18), lat2y(-32));
+            ctx.lineTo(lon2x(16), lat2y(-30));
+            ctx.lineTo(lon2x(14), lat2y(-28));
+            // West Coast
+            ctx.lineTo(lon2x(13), lat2y(-24));
+            ctx.lineTo(lon2x(12), lat2y(-20));
+            ctx.lineTo(lon2x(12), lat2y(-16));
+            ctx.lineTo(lon2x(12), lat2y(-12));
+            ctx.lineTo(lon2x(12), lat2y(-8));
+            ctx.lineTo(lon2x(12), lat2y(-4));
+            ctx.lineTo(lon2x(10), lat2y(0));
+            ctx.lineTo(lon2x(8), lat2y(4));
+            ctx.lineTo(lon2x(6), lat2y(8));
+            ctx.lineTo(lon2x(4), lat2y(10));
+            ctx.lineTo(lon2x(2), lat2y(11));
+            ctx.lineTo(lon2x(0), lat2y(11));
+            ctx.lineTo(lon2x(-2), lat2y(12));
+            ctx.lineTo(lon2x(-4), lat2y(13));
+            ctx.lineTo(lon2x(-6), lat2y(14));
+            ctx.lineTo(lon2x(-8), lat2y(15));
+            ctx.lineTo(lon2x(-10), lat2y(16));
+            ctx.lineTo(lon2x(-12), lat2y(18));
+            ctx.lineTo(lon2x(-14), lat2y(20));
+            ctx.lineTo(lon2x(-16), lat2y(23));
+            ctx.lineTo(lon2x(-17), lat2y(26));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Madagascar
+            ctx.beginPath();
+            ctx.moveTo(lon2x(43), lat2y(-12));
+            ctx.lineTo(lon2x(44), lat2y(-12));
+            ctx.lineTo(lon2x(51), lat2y(-15));
+            ctx.lineTo(lon2x(51), lat2y(-20));
+            ctx.lineTo(lon2x(48), lat2y(-25));
+            ctx.lineTo(lon2x(45), lat2y(-26));
+            ctx.lineTo(lon2x(44), lat2y(-24));
+            ctx.lineTo(lon2x(43), lat2y(-20));
+            ctx.lineTo(lon2x(43), lat2y(-15));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Australia - more accurate
+            ctx.beginPath();
+            // North coast
+            ctx.moveTo(lon2x(113), lat2y(-10));
+            ctx.lineTo(lon2x(118), lat2y(-11));
+            ctx.lineTo(lon2x(123), lat2y(-12));
+            ctx.lineTo(lon2x(128), lat2y(-12));
+            ctx.lineTo(lon2x(133), lat2y(-11));
+            ctx.lineTo(lon2x(138), lat2y(-12));
+            ctx.lineTo(lon2x(142), lat2y(-11));
+            // East coast
+            ctx.lineTo(lon2x(145), lat2y(-13));
+            ctx.lineTo(lon2x(148), lat2y(-15));
+            ctx.lineTo(lon2x(150), lat2y(-18));
+            ctx.lineTo(lon2x(151), lat2y(-22));
+            ctx.lineTo(lon2x(153), lat2y(-26));
+            ctx.lineTo(lon2x(153), lat2y(-30));
+            ctx.lineTo(lon2x(152), lat2y(-34));
+            // South coast
+            ctx.lineTo(lon2x(150), lat2y(-36));
+            ctx.lineTo(lon2x(148), lat2y(-38));
+            ctx.lineTo(lon2x(145), lat2y(-38));
+            ctx.lineTo(lon2x(140), lat2y(-37));
+            ctx.lineTo(lon2x(136), lat2y(-35));
+            ctx.lineTo(lon2x(132), lat2y(-34));
+            ctx.lineTo(lon2x(128), lat2y(-34));
+            ctx.lineTo(lon2x(124), lat2y(-34));
+            ctx.lineTo(lon2x(120), lat2y(-33));
+            ctx.lineTo(lon2x(116), lat2y(-32));
+            // West coast
+            ctx.lineTo(lon2x(114), lat2y(-28));
+            ctx.lineTo(lon2x(113), lat2y(-24));
+            ctx.lineTo(lon2x(113), lat2y(-20));
+            ctx.lineTo(lon2x(113), lat2y(-15));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // New Zealand
+            ctx.beginPath();
+            // North Island
+            ctx.moveTo(lon2x(174), lat2y(-35));
+            ctx.lineTo(lon2x(175), lat2y(-35));
+            ctx.lineTo(lon2x(178), lat2y(-37));
+            ctx.lineTo(lon2x(178), lat2y(-39));
+            ctx.lineTo(lon2x(176), lat2y(-40));
+            ctx.lineTo(lon2x(174), lat2y(-39));
+            ctx.lineTo(lon2x(174), lat2y(-37));
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // South Island
+            ctx.beginPath();
+            ctx.moveTo(lon2x(170), lat2y(-41));
+            ctx.lineTo(lon2x(172), lat2y(-40));
+            ctx.lineTo(lon2x(174), lat2y(-41));
+            ctx.lineTo(lon2x(174), lat2y(-43));
+            ctx.lineTo(lon2x(172), lat2y(-45));
+            ctx.lineTo(lon2x(170), lat2y(-46));
+            ctx.lineTo(lon2x(168), lat2y(-46));
+            ctx.lineTo(lon2x(167), lat2y(-44));
+            ctx.lineTo(lon2x(168), lat2y(-42));
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
         }
         
         function drawAstroLines(ctx, width, height, planets) {
+            const isMobile = window.innerWidth < 768;
+            const symbolSize = isMobile ? 18 : 24;
+            const circleRadius = isMobile ? 15 : 20;
+            
             planets.forEach(planet => {
                 const color = planetColors[planet];
                 const planetLon = calculatedPlanetaryPositions[planet];
+                const planetDeclination = getPlanetDeclination(planet);
                 
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2;
-                ctx.globalAlpha = 0.7;
+                // Draw MC line (solid, vertical)
+                drawMCLine(ctx, planetLon, color, width, height, planet, symbolSize, circleRadius, isMobile);
                 
-                const x1 = ((planetLon + 180) % 360) / 360 * width;
+                // Draw IC line (dotted, vertical)
+                drawICLine(ctx, planetLon, color, width, height, planet, symbolSize, circleRadius, isMobile);
                 
-                ctx.beginPath();
-                ctx.moveTo(x1, 0);
-                ctx.lineTo(x1, height);
-                ctx.stroke();
+                // Draw ASC line (dashed, curved)
+                drawASCLine(ctx, planetLon, planetDeclination, color, width, height, planet, symbolSize, circleRadius, isMobile);
                 
-                // Add planet symbol at top of line
-                ctx.globalAlpha = 1;
-                ctx.font = 'bold 24px sans-serif';
-                ctx.fillStyle = color;
-                ctx.textAlign = 'center';
-                
-                // Background circle for symbol
-                const symbolY = 30;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.beginPath();
-                ctx.arc(x1, symbolY, 20, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Symbol itself
-                ctx.fillStyle = color;
-                ctx.fillText(planetSymbols[planet], x1, symbolY + 8);
-                ctx.textAlign = 'left';
-                
-                if (['mc', 'ic', 'asc', 'dsc'].includes(planet)) {
-                    const y = (Math.random() * 0.6 + 0.2) * height;
-                    ctx.strokeStyle = color;
-                    ctx.globalAlpha = 0.7;
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                    ctx.stroke();
-                    
-                    // Add symbol on left side for horizontal lines
-                    ctx.globalAlpha = 1;
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                    ctx.beginPath();
-                    ctx.arc(30, y, 20, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    ctx.fillStyle = color;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(planetSymbols[planet], 30, y + 8);
-                    ctx.textAlign = 'left';
-                }
+                // Draw DSC line (dash-dot, curved)
+                drawDSCLine(ctx, planetLon, planetDeclination, color, width, height, planet, symbolSize, circleRadius, isMobile);
             });
             
             ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+        }
+        
+        function getPlanetDeclination(planet) {
+            // Convert ecliptic longitude to approximate declination
+            // This is simplified - real calculation requires full equatorial conversion
+            const lon = calculatedPlanetaryPositions[planet];
+            const eclipticObliquity = 23.4397; // degrees
+            
+            // Approximate declination using simplified formula
+            const lonRad = lon * Math.PI / 180;
+            const oblRad = eclipticObliquity * Math.PI / 180;
+            
+            const declination = Math.asin(Math.sin(oblRad) * Math.sin(lonRad)) * 180 / Math.PI;
+            
+            return declination;
+        }
+        
+        function drawMCLine(ctx, planetLon, color, width, height, planet, symbolSize, circleRadius, isMobile) {
+            const x = ((planetLon + 180) % 360) / 360 * width;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.8;
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+            
+            // Add MC symbol at top
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.beginPath();
+            ctx.arc(x, 25, circleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold ' + (symbolSize - 4) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(planetSymbols[planet], x, 20);
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('MC', x, 32);
+        }
+        
+        function drawICLine(ctx, planetLon, color, width, height, planet, symbolSize, circleRadius, isMobile) {
+            const x = (((planetLon + 180) % 360) + 180) % 360 / 360 * width;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.6;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+            
+            // Add IC symbol at bottom
+            ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.beginPath();
+            ctx.arc(x, height - 25, circleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold ' + (symbolSize - 4) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(planetSymbols[planet], x, height - 30);
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('IC', x, height - 18);
+        }
+        
+        function drawASCLine(ctx, planetLon, declination, color, width, height, planet, symbolSize, circleRadius, isMobile) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.7;
+            ctx.setLineDash([10, 5]);
+            
+            ctx.beginPath();
+            
+            // Draw curved ASC line
+            let firstPoint = true;
+            for (let lat = 85; lat >= -85; lat -= 2) {
+                const ascLon = calculateASCLongitude(planetLon, declination, lat);
+                if (ascLon !== null) {
+                    const x = ((ascLon + 180) % 360) / 360 * width;
+                    const y = ((90 - lat) / 180) * height;
+                    
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+            }
+            ctx.stroke();
+            
+            // Add ASC symbol
+            ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+            const midLat = 0; // Equator
+            const midAscLon = calculateASCLongitude(planetLon, declination, midLat);
+            if (midAscLon !== null) {
+                const symbolX = ((midAscLon + 180) % 360) / 360 * width;
+                const symbolY = height / 2;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.beginPath();
+                ctx.arc(symbolX, symbolY, circleRadius - 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = color;
+                ctx.font = 'bold ' + (symbolSize - 6) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(planetSymbols[planet], symbolX, symbolY - 5);
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText('ASC', symbolX, symbolY + 6);
+            }
+        }
+        
+        function drawDSCLine(ctx, planetLon, declination, color, width, height, planet, symbolSize, circleRadius, isMobile) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.7;
+            ctx.setLineDash([10, 5, 2, 5]);
+            
+            ctx.beginPath();
+            
+            // Draw curved DSC line (opposite of ASC)
+            let firstPoint = true;
+            for (let lat = 85; lat >= -85; lat -= 2) {
+                const dscLon = calculateDSCLongitude(planetLon, declination, lat);
+                if (dscLon !== null) {
+                    const x = ((dscLon + 180) % 360) / 360 * width;
+                    const y = ((90 - lat) / 180) * height;
+                    
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+            }
+            ctx.stroke();
+            
+            // Add DSC symbol
+            ctx.globalAlpha = 1;
+            ctx.setLineDash([]);
+            const midLat = 0; // Equator
+            const midDscLon = calculateDSCLongitude(planetLon, declination, midLat);
+            if (midDscLon !== null) {
+                const symbolX = ((midDscLon + 180) % 360) / 360 * width;
+                const symbolY = height / 2;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.beginPath();
+                ctx.arc(symbolX, symbolY, circleRadius - 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = color;
+                ctx.font = 'bold ' + (symbolSize - 6) + 'px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(planetSymbols[planet], symbolX, symbolY - 5);
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText('DSC', symbolX, symbolY + 6);
+            }
+        }
+        
+        function calculateASCLongitude(planetLon, declination, latitude) {
+            // Calculate where planet rises at given latitude
+            // Uses spherical astronomy formulas
+            
+            const latRad = latitude * Math.PI / 180;
+            const decRad = declination * Math.PI / 180;
+            
+            // Planet must be visible (declination and latitude compatible)
+            const cosineTerm = -Math.tan(latRad) * Math.tan(decRad);
+            
+            if (cosineTerm < -1 || cosineTerm > 1) {
+                return null; // Planet doesn't rise at this latitude
+            }
+            
+            // Hour angle when planet rises
+            const hourAngle = Math.acos(cosineTerm) * 180 / Math.PI;
+            
+            // Convert to longitude (simplified)
+            const ramc = planetLon; // Right ascension approximation
+            const ascLon = (ramc - hourAngle + 360) % 360;
+            
+            return ascLon;
+        }
+        
+        function calculateDSCLongitude(planetLon, declination, latitude) {
+            // Calculate where planet sets at given latitude
+            // Opposite of ASC
+            
+            const latRad = latitude * Math.PI / 180;
+            const decRad = declination * Math.PI / 180;
+            
+            const cosineTerm = -Math.tan(latRad) * Math.tan(decRad);
+            
+            if (cosineTerm < -1 || cosineTerm > 1) {
+                return null;
+            }
+            
+            const hourAngle = Math.acos(cosineTerm) * 180 / Math.PI;
+            const ramc = planetLon;
+            const dscLon = (ramc + hourAngle + 360) % 360;
+            
+            return dscLon;
         }
         
         function drawCityMarkers(ctx, width, height, cities) {
+            const isMobile = window.innerWidth < 768;
+            const markerSize = isMobile ? 6 : 8;
+            const fontSize = isMobile ? 12 : 16;
+            const ringSize = isMobile ? 10 : 14;
+            
             cities.forEach(city => {
                 const x = ((city.lon + 180) / 360) * width;
                 const y = ((90 - city.lat) / 180) * height;
                 
                 // Draw larger marker with glow effect
                 ctx.shadowColor = '#fff';
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = isMobile ? 5 : 10;
                 ctx.fillStyle = '#fff';
                 ctx.beginPath();
-                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.arc(x, y, markerSize, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.shadowBlur = 0;
                 
                 // Add pulse ring
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = isMobile ? 1 : 2;
                 ctx.beginPath();
-                ctx.arc(x, y, 14, 0, Math.PI * 2);
+                ctx.arc(x, y, ringSize, 0, Math.PI * 2);
                 ctx.stroke();
                 
                 // Draw city name with better visibility
-                ctx.font = 'bold 16px sans-serif';
+                ctx.font = 'bold ' + fontSize + 'px sans-serif';
                 const textWidth = ctx.measureText(city.name).width;
+                
+                const padding = isMobile ? 6 : 12;
+                const boxHeight = isMobile ? 20 : 28;
+                const xOffset = isMobile ? 12 : 18;
+                const yOffset = isMobile ? -8 : -14;
                 
                 // Black background with more padding
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                ctx.fillRect(x + 18, y - 14, textWidth + 12, 28);
+                ctx.fillRect(x + xOffset, y + yOffset, textWidth + padding, boxHeight);
                 
                 // White border around text box
                 ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(x + 18, y - 14, textWidth + 12, 28);
+                ctx.strokeRect(x + xOffset, y + yOffset, textWidth + padding, boxHeight);
                 
                 // City name in white
                 ctx.fillStyle = '#fff';
-                ctx.fillText(city.name, x + 24, y + 5);
+                ctx.fillText(city.name, x + xOffset + padding/2, y + (isMobile ? 4 : 5));
             });
         }
         
@@ -1098,25 +2499,41 @@
             const legend = document.getElementById('legend');
             legend.innerHTML = '';
             
+            const lineTypes = [
+                { name: 'MC (Overhead)', style: 'solid' },
+                { name: 'IC (Underfoot)', style: 'dotted' },
+                { name: 'ASC (Rising)', style: 'dashed' },
+                { name: 'DSC (Setting)', style: 'dashdot' }
+            ];
+            
             planets.forEach(planet => {
                 const item = document.createElement('div');
-                item.className = 'legend-item';
+                item.style.marginBottom = '1rem';
+                item.style.padding = '0.75rem';
+                item.style.borderLeft = '3px solid ' + planetColors[planet];
                 
-                const symbol = document.createElement('span');
-                symbol.style.fontSize = '1.5rem';
-                symbol.style.marginRight = '0.5rem';
-                symbol.textContent = planetSymbols[planet];
+                let html = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="font-size: 1.5rem;">${planetSymbols[planet]}</span>
+                        <span style="font-weight: 500;">${planetNames[planet]}</span>
+                    </div>
+                `;
                 
-                const line = document.createElement('div');
-                line.className = 'legend-line';
-                line.style.backgroundColor = planetColors[planet];
+                lineTypes.forEach(type => {
+                    let borderStyle = 'solid';
+                    if (type.style === 'dotted') borderStyle = 'dotted';
+                    else if (type.style === 'dashed') borderStyle = 'dashed';
+                    else if (type.style === 'dashdot') borderStyle = 'dashed';
+                    
+                    html += `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 2rem; margin-bottom: 0.25rem;">
+                            <div style="width: 30px; height: 2px; background: ${planetColors[planet]}; border-top: 2px ${borderStyle} ${planetColors[planet]};"></div>
+                            <span style="font-size: 0.75rem; color: #999;">${type.name}</span>
+                        </div>
+                    `;
+                });
                 
-                const name = document.createElement('span');
-                name.textContent = planetNames[planet];
-                
-                item.appendChild(symbol);
-                item.appendChild(line);
-                item.appendChild(name);
+                item.innerHTML = html;
                 legend.appendChild(item);
             });
         }
@@ -1126,30 +2543,38 @@
             
             const meanings = {
                 career: {
-                    sun: 'Your authentic leadership and creative self-expression flourish',
-                    jupiter: 'Opportunities multiply and success comes naturally',
-                    mc: 'Professional recognition and career advancement peak',
-                    saturn: 'Hard work builds lasting legacy and authority'
+                    sun: 'Leadership, recognition, and authentic self-expression in your profession',
+                    jupiter: 'Expansion, opportunity, and professional growth',
+                    saturn: 'Structure, discipline, and lasting career achievements',
+                    mars: 'Drive, ambition, and dynamic professional energy'
                 },
                 studies: {
-                    mercury: 'Your mind is sharp, communication flows effortlessly',
-                    jupiter: 'Wisdom expands through education and philosophical growth',
-                    sun: 'Intellectual pursuits feel purposeful and fulfilling'
+                    mercury: 'Mental clarity, effective communication, and learning',
+                    jupiter: 'Higher education, wisdom, and philosophical growth',
+                    sun: 'Purposeful learning and intellectual development'
                 },
                 love: {
-                    venus: 'Romance blooms, relationships feel magical and harmonious',
-                    moon: 'Emotional intimacy deepens, nurturing comes naturally',
-                    dsc: 'Meaningful partnerships and committed love thrive'
+                    venus: 'Romance, harmony, and loving relationships',
+                    moon: 'Emotional intimacy and nurturing connections'
                 },
                 family: {
-                    moon: 'You feel emotionally safe, nurtured, and at home',
-                    ic: 'Deep roots form, connecting you to ancestry and belonging',
-                    venus: 'Family harmony, domestic bliss, and comfort abound'
+                    moon: 'Emotional safety, nurturing, and family bonds',
+                    venus: 'Domestic harmony and loving family relationships',
+                    jupiter: 'Family growth, abundance, and joy'
                 }
             };
             
             let html = '<div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #222;">';
-            html += '<h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #999;">What Each Line Means</h3>';
+            html += '<h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; color: #999;">Understanding Your Lines</h3>';
+            
+            html += '<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.03); font-size: 0.875rem; color: #999;">';
+            html += '<p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">MC (Midheaven)</strong> - Where the planet is directly overhead. Strongest for public/professional matters.</p>';
+            html += '<p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">IC (Imum Coeli)</strong> - Where the planet is underfoot. Strongest for private/home matters.</p>';
+            html += '<p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">ASC (Ascendant)</strong> - Where the planet rises. Affects your identity and how others see you.</p>';
+            html += '<p><strong style="color: #fff;">DSC (Descendant)</strong> - Where the planet sets. Influences partnerships and relationships.</p>';
+            html += '</div>';
+            
+            html += '<h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; color: #999;">What Each Planet Brings</h3>';
             
             planets.forEach(planet => {
                 if (meanings[category][planet]) {
@@ -1176,17 +2601,193 @@
             html += '<p style="color: #999; font-size: 0.875rem; margin-bottom: 1rem;">These cities sit on your most powerful planetary lines for ' + category + '.</p>';
             
             cities.forEach(city => {
-                const planetsList = city.planets.map(p => planetNames[p]).join(', ');
+                const linesList = city.lines.map(line => {
+                    const parts = line.split('_');
+                    const planet = parts[0];
+                    const lineType = parts[1].toUpperCase();
+                    return `<span style="color: ${planetColors[planet]}">${planetNames[planet]} ${lineType}</span>`;
+                }).join(', ');
+                
                 html += '<div class="city-item">';
                 html += '<div>';
                 html += '<div class="city-name">' + city.name + '</div>';
                 html += '<div class="city-country">' + city.country + '</div>';
                 html += '</div>';
-                html += '<div class="city-lines">' + planetsList + '</div>';
+                html += '<div class="city-lines" style="color: #999;">' + linesList + '</div>';
                 html += '</div>';
             });
             
             cityList.innerHTML = html;
+        }
+        
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'map') {
+                document.getElementById('mapView').style.display = 'block';
+                document.getElementById('chartView').style.display = 'none';
+                tabs[0].classList.add('active');
+            } else {
+                document.getElementById('mapView').style.display = 'none';
+                document.getElementById('chartView').style.display = 'block';
+                tabs[1].classList.add('active');
+                drawNatalChart();
+            }
+        }
+        
+        function getZodiacSign(degree) {
+            const normalizedDegree = degree % 360;
+            for (let i = zodiacSigns.length - 1; i >= 0; i--) {
+                if (normalizedDegree >= zodiacSigns[i].start) {
+                    const degreeInSign = normalizedDegree - zodiacSigns[i].start;
+                    return {
+                        sign: zodiacSigns[i],
+                        degree: Math.floor(degreeInSign),
+                        minute: Math.floor((degreeInSign % 1) * 60)
+                    };
+                }
+            }
+            return {
+                sign: zodiacSigns[0],
+                degree: Math.floor(normalizedDegree),
+                minute: Math.floor((normalizedDegree % 1) * 60)
+            };
+        }
+        
+        function drawNatalChart() {
+            const canvas = document.getElementById('chartCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 200;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw outer circle
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw zodiac wheel (12 signs)
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 12; i++) {
+                const angle = (i * 30 - 90) * Math.PI / 180; // Start from Aries at top
+                
+                // Draw division lines
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(angle) * radius,
+                    centerY + Math.sin(angle) * radius
+                );
+                ctx.strokeStyle = '#333';
+                ctx.stroke();
+                
+                // Draw zodiac symbols
+                const symbolAngle = (i * 30 + 15 - 90) * Math.PI / 180;
+                const symbolRadius = radius - 30;
+                const symbolX = centerX + Math.cos(symbolAngle) * symbolRadius;
+                const symbolY = centerY + Math.sin(symbolAngle) * symbolRadius;
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(zodiacSigns[i].symbol, symbolX, symbolY);
+            }
+            
+            // Draw inner circle for houses
+            const innerRadius = radius - 60;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw planets
+            const planetsToShow = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'asc'];
+            
+            planetsToShow.forEach(planet => {
+                const position = calculatedPlanetaryPositions[planet];
+                if (position === undefined) return;
+                
+                const angle = (position - 90) * Math.PI / 180; // Adjust to start from top
+                const planetRadius = innerRadius - 30;
+                const planetX = centerX + Math.cos(angle) * planetRadius;
+                const planetY = centerY + Math.sin(angle) * planetRadius;
+                
+                // Draw planet symbol
+                ctx.fillStyle = planetColors[planet];
+                ctx.font = 'bold 20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(planetSymbols[planet], planetX, planetY);
+                
+                // Draw line from center to planet
+                ctx.strokeStyle = planetColors[planet];
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(planetX, planetY);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            });
+            
+            // Draw ascendant line (thicker)
+            if (calculatedPlanetaryPositions.asc !== undefined) {
+                const ascAngle = (calculatedPlanetaryPositions.asc - 90) * Math.PI / 180;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(ascAngle) * radius,
+                    centerY + Math.sin(ascAngle) * radius
+                );
+                ctx.stroke();
+            }
+            
+            // Update planet positions list
+            updatePlanetPositions();
+        }
+        
+        function updatePlanetPositions() {
+            const container = document.getElementById('planetPositions');
+            container.innerHTML = '';
+            
+            const planetsToShow = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'asc', 'mc'];
+            
+            planetsToShow.forEach(planet => {
+                const position = calculatedPlanetaryPositions[planet];
+                if (position === undefined) return;
+                
+                const zodiac = getZodiacSign(position);
+                
+                const div = document.createElement('div');
+                div.className = 'planet-position';
+                div.style.borderLeftColor = planetColors[planet];
+                div.style.borderLeftWidth = '3px';
+                
+                div.innerHTML = `
+                    <div class="planet-details">
+                        <span class="planet-symbol" style="color: ${planetColors[planet]}">${planetSymbols[planet]}</span>
+                        <span style="font-weight: 500;">${planetNames[planet]}</span>
+                    </div>
+                    <div>
+                        <span class="planet-sign">${zodiac.sign.name} ${zodiac.sign.symbol}</span>
+                        <span class="planet-degree">${zodiac.degree}°${zodiac.minute}'</span>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
         }
     </script>
 </body>
